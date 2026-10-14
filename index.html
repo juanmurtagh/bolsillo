@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Bolsillo</title>
+<meta name="theme-color" content="#F3F5F1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap">
+
+<!-- Librería oficial de Supabase: le da a la página las funciones para hablar con la base de datos -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+
+<style>
+/* ============ COLORES Y TIPOGRAFÍAS ============
+   Todos los colores están definidos acá una sola vez como "variables" (--nombre).
+   El resto del código las usa, así que para cambiar un color alcanza con tocarlo acá. */
+:root{
+  --bg:#F3F5F1; --surface:#FFFFFF; --soft:#E9EDE7; --ink:#17201B; --muted:#5D6A62; --line:#DAE0D8;
+  --accent:#2A47C9; --accent-ink:#FFFFFF; --danger:#B42B22;
+  --s0:#2a78d6; --s1:#eb6834; --s2:#1baf7a; --s3:#eda100; --s4:#e87ba4; --s5:#008300; --s6:#6250d6; --s7:#e34948;
+  --display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  --body:'Figtree',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --r:12px;
+}
+/* Modo oscuro: si el celular o la compu están en modo oscuro, se usan estos colores */
+@media (prefers-color-scheme: dark){:root{
+  --bg:#101512; --surface:#18201B; --soft:#212A24; --ink:#EDF1EC; --muted:#9BA79F; --line:#2A332D;
+  --accent:#8198F5; --accent-ink:#0D1433; --danger:#F08A80;
+  --s0:#3987e5; --s1:#d95926; --s2:#199e70; --s3:#c98500; --s4:#d55181; --s5:#2f9a2f; --s6:#9085e9; --s7:#e66767;
+  color-scheme:dark}}
+
+*{box-sizing:border-box}
+html{padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 120px}
+[hidden]{display:none!important}
+.wrap{max-width:620px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+
+/* ============ ENCABEZADO ============ */
+header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-top:24px}
+h1{font-family:var(--display);font-weight:700;font-size:30px;line-height:1.05;letter-spacing:-.02em;margin:0}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0}
+.salir{background:none;border:0;padding:0;color:var(--muted);font-size:12px;text-decoration:underline;margin-left:8px;letter-spacing:0;text-transform:none}
+.mes{display:flex;align-items:center;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px}
+.mes button{width:34px;height:34px;border-radius:999px;border:0;background:transparent;font-size:18px;line-height:1}
+.mes button:hover:not(:disabled){background:var(--soft)}
+.mes button:disabled{opacity:.3;cursor:default}
+.mes span{min-width:128px;text-align:center;font-weight:600;font-size:14px}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px}
+
+/* ============ RESUMEN: TORTA + LISTA ============ */
+.resumen{display:grid;grid-template-columns:200px minmax(0,1fr);gap:24px;align-items:center}
+@media (max-width:520px){.resumen{grid-template-columns:minmax(0,1fr)}.dona{justify-self:center}}
+.dona{position:relative;width:200px;height:200px}
+.dona svg{width:100%;height:100%;transform:rotate(-90deg)}
+.dona circle{fill:none;transition:stroke-width .15s}
+.dona .centro{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;pointer-events:none}
+.dona .centro small{font-size:12px;color:var(--muted)}
+.dona .centro strong{font-family:var(--display);font-weight:700;font-size:24px}
+.filas{display:flex;flex-direction:column;gap:2px;min-width:0}
+.fila{display:grid;grid-template-columns:12px minmax(0,1fr) auto 40px 14px;gap:10px;align-items:center;width:100%;text-align:left;
+  background:transparent;border:0;border-radius:8px;padding:9px 8px}
+.fila:hover,.fila.on{background:var(--soft)}
+.fila .sw{width:12px;height:12px;border-radius:3px;background:var(--c)}
+.fila .nom{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.fila .nom small{display:block;font-weight:400;font-size:12px;color:var(--muted)}
+.fila .monto{font-weight:600}
+.fila .pct{color:var(--muted);text-align:right;font-size:13px}
+.fila .chev{color:var(--muted)}
+.fila.cero{opacity:.6}
+.nueva{display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.nueva input{flex:1;min-width:0}
+
+/* ============ FORMULARIOS Y BOTONES ============ */
+input[type=text],input[type=email],input[type=password],input[type=date],input[inputmode],select{height:44px;border:1px solid var(--line);border-radius:10px;background:var(--bg);padding:0 12px;width:100%}
+input:focus,select:focus{border-color:var(--accent);outline:none}
+.btn{height:44px;padding:0 16px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-weight:600;white-space:nowrap}
+.btn:hover{background:var(--soft)}
+.btn.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.dan{color:var(--danger)}
+.btn.chico{height:34px;padding:0 12px;font-size:13px}
+.btn:disabled{opacity:.6;cursor:wait}
+.campo{display:flex;flex-direction:column;gap:6px}
+.campo label{font-size:13px;font-weight:600;color:var(--muted)}
+.err{font-size:13px;color:var(--danger);margin:0}
+
+/* ============ LISTA DE GASTOS ============ */
+.gastos{display:flex;flex-direction:column}
+.gasto{display:grid;grid-template-columns:52px minmax(0,1fr) auto auto;gap:12px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.gasto:first-child{border-top:0}
+.fecha{text-align:center;line-height:1.1}
+.fecha b{display:block;font-family:var(--display);font-size:20px}
+.fecha small{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.gasto .txt{min-width:0}
+.gasto .txt div{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gasto .txt small{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.gasto .txt small i{width:8px;height:8px;border-radius:2px;background:var(--c);display:inline-block}
+.gasto .monto{font-weight:600}
+.acc{display:flex;gap:2px}
+.ico{width:34px;height:34px;border:0;border-radius:8px;background:transparent;color:var(--muted);display:grid;place-items:center}
+.ico:hover{background:var(--soft);color:var(--ink)}
+.ico svg{width:17px;height:17px}
+.confirma{grid-column:1/-1;display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:14px;background:var(--soft);border-radius:8px;padding:8px 10px}
+.confirma span{flex:1;min-width:140px}
+
+/* ============ VISTA DE UNA CATEGORÍA ============ */
+.volver{align-self:flex-start;background:transparent;border:0;color:var(--accent);font-weight:600;padding:4px 0}
+.cab{display:flex;flex-direction:column;gap:12px}
+.cab .t{display:flex;align-items:center;gap:10px}
+.cab .t i{width:14px;height:14px;border-radius:4px;background:var(--c)}
+.cab h2{font-family:var(--display);font-weight:700;font-size:26px;margin:0;min-width:0;overflow-wrap:anywhere}
+.cab .tot{font-family:var(--display);font-weight:700;font-size:34px;line-height:1}
+.cab .botones{display:flex;gap:8px;flex-wrap:wrap}
+.vacio{text-align:center;color:var(--muted);padding:12px 0;margin:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{height:36px;padding:0 14px;border-radius:999px;border:1px dashed var(--line);background:transparent;font-weight:500}
+.chip:hover{border-style:solid;background:var(--soft)}
+
+/* ============ PANTALLA DE INGRESO ============ */
+.login{max-width:400px;margin:12vh auto 0;display:flex;flex-direction:column;gap:14px}
+.login h1{font-size:38px}
+.login .dos-btn{display:flex;gap:8px}
+.login .dos-btn .btn{flex:1}
+
+/* ============ BOTÓN FIJO Y VENTANA DE CARGA ============ */
+.pie{position:fixed;left:0;right:0;bottom:0;padding:12px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+  background:linear-gradient(to top,var(--bg) 70%,transparent);display:flex;justify-content:center}
+.pie .btn{width:100%;max-width:620px;height:52px;font-size:16px;border-radius:14px}
+.velo{position:fixed;inset:0;background:rgba(10,14,12,.45);display:flex;align-items:flex-end;justify-content:center;z-index:10}
+.hoja{background:var(--surface);width:100%;max-width:520px;border-radius:18px 18px 0 0;
+  padding:20px max(20px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));
+  display:flex;flex-direction:column;gap:14px;max-height:92vh;overflow:auto}
+@media (min-width:600px){.velo{align-items:center}.hoja{border-radius:18px}}
+.hoja h3{font-family:var(--display);font-weight:700;font-size:22px;margin:0}
+.monto-in{font-family:var(--display);font-size:28px!important;height:60px!important;font-weight:700}
+.dos{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.hoja .fin{display:flex;gap:8px;justify-content:flex-end;margin-top:4px}
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);
+  padding:10px 16px;border-radius:999px;font-size:14px;font-weight:500;z-index:20;max-width:calc(100% - 32px)}
+</style>
+</head>
+<body>
+
+<!-- ============ PANTALLA DE INGRESO (se muestra si no iniciaste sesión) ============ -->
+<form id="login" class="login" hidden novalidate>
+  <p class="eyebrow">Mis gastos</p>
+  <h1>Bolsillo</h1>
+  <div class="campo"><label for="lEmail">Email</label><input type="email" id="lEmail" autocomplete="email"></div>
+  <div class="campo"><label for="lPass">Contraseña</label><input type="password" id="lPass" autocomplete="current-password" placeholder="Mínimo 6 caracteres"></div>
+  <p class="err" id="lErr" hidden></p>
+  <div class="dos-btn">
+    <button type="submit" class="btn pri" id="lEntrar">Entrar</button>
+    <button type="button" class="btn" id="lCrear">Crear cuenta</button>
+  </div>
+</form>
+
+<!-- ============ LA APLICACIÓN (se muestra una vez que entraste) ============ -->
+<div id="app" class="wrap" hidden>
+  <header class="top">
+    <div>
+      <p class="eyebrow">Mis gastos <button class="salir" id="btnSalir">Cerrar sesión</button></p>
+      <h1>Bolsillo</h1>
+    </div>
+    <div class="mes" aria-label="Mes">
+      <button id="mesAnt" aria-label="Mes anterior">‹</button>
+      <span id="mesTxt" class="num">…</span>
+      <button id="mesSig" aria-label="Mes siguiente">›</button>
+    </div>
+  </header>
+  <main id="main" class="wrap"></main>
+</div>
+
+<div class="pie" id="pie" hidden><button id="btnAgregar" class="btn pri">+ Agregar gasto</button></div>
+<div id="velo" class="velo" hidden></div>
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script>
+/* =====================================================================
+   1. CONEXIÓN CON SUPABASE
+   Estos dos datos le dicen a la página CON QUÉ base de datos hablar.
+   Están a la vista a propósito: la seguridad la ponen las reglas (RLS)
+   que creaste en Supabase, no el secreto de esta llave.
+   ===================================================================== */
+const SUPABASE_URL = 'https://hofhgtuabmahocszcyea.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_P8kczmbiyx1y12Ehm8V8Ww_-8c_rsF3';
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+/* =====================================================================
+   2. ESTADO: todo lo que la página "sabe" en este momento
+   ===================================================================== */
+const SUGERIDAS = ['Comida','Transporte','Salidas','Novia','Facultad','Suscripciones'];
+const S = {
+  cats: {},          // categorías:  { id: {nombre, color, creado} }
+  gastos: {},        // gastos:      { id: {monto, cat, fecha, desc, creado} }
+  mes: mesDe(hoy()), // mes que estás mirando, ej. "2026-10"
+  vista: 'inicio',   // 'inicio' o el id de una categoría abierta
+  on: -1,            // porción de la torta resaltada
+  confirma: null,    // qué está pidiendo confirmación para borrar
+  editaCat: false,   // si estás cambiando el nombre de una categoría
+  listo: false
+};
+
+/* =====================================================================
+   3. FUNCIONES DE AYUDA (fechas, plata, textos)
+   ===================================================================== */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const nf = new Intl.NumberFormat('es-AR', {minimumFractionDigits:0, maximumFractionDigits:2});
+const plata = v => '$' + nf.format(Math.round(v*100)/100);
+function hoy(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function mesDe(f){ return f.slice(0,7); }
+function nombreMes(m){ const [y,mm]=m.split('-').map(Number); const t=new Date(y,mm-1,1).toLocaleDateString('es-AR',{month:'long',year:'numeric'}); return t.charAt(0).toUpperCase()+t.slice(1).replace(' de ',' '); }
+function soloMes(m){ const [y,mm]=m.split('-').map(Number); return new Date(y,mm-1,1).toLocaleDateString('es-AR',{month:'long'}); }
+function moverMes(m,d){ let [y,mm]=m.split('-').map(Number); mm+=d; while(mm<1){mm+=12;y--} while(mm>12){mm-=12;y++} return y+'-'+String(mm).padStart(2,'0'); }
+function nuevoId(){ return crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return (c==='x'?r:(r&3|8)).toString(16)}); }
+// Entiende montos escritos a la argentina: 2500, 2.500 o 2.500,50
+function parseMonto(t){ t=String(t).replace(/[$\s]/g,''); if(!t) return NaN;
+  if(t.includes(',')) t=t.replace(/\./g,'').replace(',','.'); else if(/^\d{1,3}(\.\d{3})+$/.test(t)) t=t.replace(/\./g,'');
+  const n=Number(t); return isFinite(n) ? Math.round(n*100)/100 : NaN; }
+function toast(t){ const el=$('#toast'); el.textContent=t; el.hidden=false; clearTimeout(toast.t); toast.t=setTimeout(()=>el.hidden=true,2400); }
+
+/* =====================================================================
+   4. BASE DE DATOS: leer y guardar en Supabase
+   Cada función hace un pedido a Supabase y, si sale bien,
+   actualiza el estado y vuelve a dibujar la página.
+   ===================================================================== */
+const db = {
+  async cargar(){
+    const [c, g] = await Promise.all([
+      sb.from('categorias').select('id,nombre,color,creado'),
+      sb.from('gastos').select('id,categoria_id,monto,fecha,descripcion,creado')
+    ]);
+    if (c.error || g.error) throw (c.error || g.error);
+    S.cats = Object.fromEntries(c.data.map(r => [r.id, {nombre:r.nombre, color:r.color, creado:Date.parse(r.creado)}]));
+    S.gastos = Object.fromEntries(g.data.map(r => [r.id, {monto:Number(r.monto), cat:r.categoria_id, fecha:r.fecha, desc:r.descripcion||'', creado:Date.parse(r.creado)}]));
+    S.listo = true; render();
+  },
+  async guardarCat(id, obj){
+    const { error } = await sb.from('categorias').upsert({id, nombre:obj.nombre, color:obj.color});
+    if (error) throw error;
+    S.cats[id] = obj; render();
+  },
+  async guardarGasto(id, obj){
+    const { error } = await sb.from('gastos').upsert({id, categoria_id:obj.cat, monto:obj.monto, fecha:obj.fecha, descripcion:obj.desc||null});
+    if (error) throw error;
+    S.gastos[id] = obj; render();
+  },
+  async borrarGasto(id){
+    const { error } = await sb.from('gastos').delete().eq('id', id);
+    if (error) throw error;
+    delete S.gastos[id]; render();
+  },
+  async borrarCat(id){
+    // Al borrar la categoría, Supabase borra solo sus gastos (on delete cascade)
+    const { error } = await sb.from('categorias').delete().eq('id', id);
+    if (error) throw error;
+    for (const [gid,g] of Object.entries(S.gastos)) if (g.cat === id) delete S.gastos[gid];
+    delete S.cats[id]; render();
+  }
+};
+// Envuelve cada guardado: si falla, avisa en vez de romperse en silencio
+async function seguro(fn, ok){
+  try { await fn(); if (ok) toast(ok); }
+  catch(e){ console.error(e); toast('No se pudo guardar. Revisá tu conexión y probá de nuevo.'); }
+}
+
+function colorLibre(){ const usados=Object.values(S.cats).map(c=>c.color); for(let i=0;i<8;i++) if(!usados.includes(i)) return i; return Object.keys(S.cats).length%8; }
+async function crearCat(nombre){
+  nombre = nombre.trim().replace(/\s+/g,' '); if(!nombre) return null;
+  const ya = Object.entries(S.cats).find(([,c]) => c.nombre.toLowerCase() === nombre.toLowerCase());
+  if (ya) return ya[0];
+  const id = nuevoId();
+  await db.guardarCat(id, {nombre, color:colorLibre(), creado:Date.now()});
+  return id;
+}
+
+/* =====================================================================
+   5. CÁLCULOS DEL MES
+   ===================================================================== */
+function delMes(){
+  return Object.entries(S.gastos).filter(([,g]) => mesDe(g.fecha) === S.mes).map(([id,g]) => ({id,...g}))
+    .sort((a,b) => b.fecha.localeCompare(a.fecha) || (b.creado||0)-(a.creado||0));
+}
+function resumen(){
+  const gs = delMes(); const t = {};
+  gs.forEach(g => { t[g.cat] = t[g.cat] || {m:0,n:0}; t[g.cat].m += g.monto; t[g.cat].n++; });
+  const filas = Object.entries(S.cats).map(([id,c]) => ({id,...c, m:t[id]?.m||0, n:t[id]?.n||0}))
+    .sort((a,b) => b.m-a.m || a.nombre.localeCompare(b.nombre,'es'));
+  return { gs, filas, total: filas.reduce((s,f) => s+f.m, 0) };
+}
+
+/* =====================================================================
+   6. DIBUJAR LA PÁGINA
+   Cada vez que algo cambia, render() arma de nuevo el contenido.
+   ===================================================================== */
+const ICO = {
+  edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>',
+  del:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M5 7l1 13h12l1-13M9 7V4h6v3"/></svg>'
+};
+
+// La torta: un círculo por categoría, cada uno dibuja solo "su" pedazo
+function dona(filas, total){
+  const R=80, C=2*Math.PI*R, gap=filas.filter(f=>f.m>0).length>1?3:0; let off=0;
+  let arcos = `<circle cx="100" cy="100" r="${R}" stroke="var(--soft)" stroke-width="26"/>`;
+  if (total > 0) filas.forEach((f,i) => { if(!f.m) return; const L=f.m/total*C;
+    arcos += `<circle data-i="${i}" cx="100" cy="100" r="${R}" style="stroke:var(--s${f.color})" stroke-width="${S.on===i?34:26}" stroke-dasharray="${Math.max(L-gap,0.5)} ${C}" stroke-dashoffset="${-off}"/>`; off+=L; });
+  const sel = S.on>=0 && filas[S.on];
+  return `<div class="dona"><svg viewBox="0 0 200 200" role="img" aria-label="Gastos de ${esc(nombreMes(S.mes))} por categoría">${arcos}</svg>
+    <div class="centro"><small>${sel?esc(sel.nombre):'Total de '+esc(soloMes(S.mes))}</small><strong class="num">${plata(sel?sel.m:total)}</strong></div></div>`;
+}
+
+function filaGasto(g, conCat){
+  const c = S.cats[g.cat] || {nombre:'Sin categoría', color:0}; const d = new Date(g.fecha+'T12:00');
+  const conf = S.confirma==='g:'+g.id ? `<div class="confirma"><span>¿Borrar este gasto de ${plata(g.monto)}?</span>
+    <button class="btn chico" data-a="no">No</button><button class="btn chico dan" data-a="borrarG" data-id="${g.id}">Sí, borrar</button></div>` : '';
+  return `<div class="gasto"><div class="fecha"><b class="num">${d.getDate()}</b><small>${esc(d.toLocaleDateString('es-AR',{weekday:'short'}).replace('.',''))}</small></div>
+    <div class="txt"><div>${g.desc?esc(g.desc):'<span style="color:var(--muted)">Sin descripción</span>'}</div>${conCat?`<small style="--c:var(--s${c.color})"><i></i>${esc(c.nombre)}</small>`:''}</div>
+    <div class="monto num">${plata(g.monto)}</div>
+    <div class="acc"><button class="ico" data-a="editarG" data-id="${g.id}" aria-label="Editar gasto">${ICO.edit}</button><button class="ico" data-a="pedirBorrarG" data-id="${g.id}" aria-label="Borrar gasto">${ICO.del}</button></div>${conf}</div>`;
+}
+
+function render(){
+  $('#mesTxt').textContent = nombreMes(S.mes);
+  $('#mesSig').disabled = S.mes >= mesDe(hoy());
+  const m = $('#main');
+  if (!S.listo){ m.innerHTML='<div class="card"><p class="vacio">Cargando tus gastos…</p></div>'; return; }
+  if (S.vista!=='inicio' && !S.cats[S.vista]) S.vista='inicio';
+  $('#btnAgregar').textContent = S.vista==='inicio' ? '+ Agregar gasto' : '+ Agregar gasto en '+S.cats[S.vista].nombre;
+  m.innerHTML = S.vista==='inicio' ? vistaInicio() : vistaCat(S.vista);
+}
+
+function vistaInicio(){
+  if (!Object.keys(S.cats).length) return `<div class="card" style="display:flex;flex-direction:column;gap:16px">
+    <p class="eyebrow">Para empezar</p>
+    <p style="margin:0;font-size:17px">Creá las categorías en las que querés ordenar tus gastos. Tocá las que te sirvan o escribí las tuyas.</p>
+    <div class="chips">${SUGERIDAS.map(s=>`<button class="chip" data-a="sugerida" data-n="${esc(s)}">+ ${esc(s)}</button>`).join('')}</div>
+    ${formNueva()}</div>`;
+  const {gs, filas, total} = resumen();
+  const lista = filas.map((f,i) => `<button class="fila${f.m?'':' cero'}${S.on===i?' on':''}" data-a="abrir" data-id="${f.id}" data-i="${i}" style="--c:var(--s${f.color})">
+      <span class="sw"></span><span class="nom">${esc(f.nombre)}<small>${f.n?f.n+(f.n===1?' gasto':' gastos'):'Sin gastos'}</small></span>
+      <span class="monto num">${plata(f.m)}</span><span class="pct num">${total?Math.round(f.m/total*100)+'%':''}</span><span class="chev">›</span></button>`).join('');
+  return `<section class="card"><div class="resumen">${dona(filas,total)}<div class="filas">${lista}</div></div>
+      ${total?'':`<p class="vacio" style="margin-top:12px">Todavía no cargaste gastos en ${esc(soloMes(S.mes))}.</p>`}
+      ${formNueva()}</section>
+    <section class="card"><p class="eyebrow" style="margin-bottom:8px">Últimos gastos de ${esc(soloMes(S.mes))}</p>
+      ${gs.length?`<div class="gastos">${gs.slice(0,8).map(g=>filaGasto(g,true)).join('')}</div>`:'<p class="vacio">Acá vas a ver lo último que cargaste.</p>'}
+      ${gs.length>8?'<p class="vacio" style="font-size:13px">Tocá una categoría para ver todos sus gastos.</p>':''}</section>`;
+}
+function formNueva(){ return `<form class="nueva" data-f="nuevaCat"><input type="text" id="inNuevaCat" placeholder="Nueva categoría (ej: Gimnasio)" maxlength="40" aria-label="Nombre de la nueva categoría"><button class="btn" type="submit">Crear</button></form>`; }
+
+function vistaCat(id){
+  const c = S.cats[id]; const gs = delMes().filter(g=>g.cat===id); const tot = gs.reduce((s,g)=>s+g.monto,0);
+  const nTodos = Object.values(S.gastos).filter(g=>g.cat===id).length;
+  let extra;
+  if (S.editaCat) extra = `<form class="nueva" data-f="renombrar" style="border:0;margin:0;padding:0"><input type="text" id="inRenombrar" value="${esc(c.nombre)}" maxlength="40" aria-label="Nuevo nombre"><button class="btn pri" type="submit">Guardar</button><button class="btn" type="button" data-a="no">Cancelar</button></form>`;
+  else if (S.confirma==='c:'+id) extra = `<div class="confirma"><span>${nTodos?`Esta categoría tiene ${nTodos} ${nTodos===1?'gasto':'gastos'} en total, contando todos los meses. Si la borrás, se borran también.`:'¿Borrar esta categoría?'}</span>
+    <button class="btn chico" data-a="no">Cancelar</button><button class="btn chico dan" data-a="borrarC" data-id="${id}">Sí, borrar todo</button></div>`;
+  else extra = `<div class="botones"><button class="btn chico" data-a="renombrarC">Cambiar nombre</button><button class="btn chico dan" data-a="pedirBorrarC" data-id="${id}">Borrar categoría</button></div>`;
+  return `<button class="volver" data-a="volver">‹ Todas las categorías</button>
+    <section class="card cab" style="--c:var(--s${c.color})">
+      <div class="t"><i></i><h2>${esc(c.nombre)}</h2></div>
+      <div><div class="tot num">${plata(tot)}</div><small style="color:var(--muted)">${gs.length} ${gs.length===1?'gasto':'gastos'} en ${esc(soloMes(S.mes))}</small></div>
+      ${extra}
+    </section>
+    <section class="card">${gs.length?`<div class="gastos">${gs.map(g=>filaGasto(g,false)).join('')}</div>`:`<p class="vacio">No hay gastos de ${esc(c.nombre)} en ${esc(soloMes(S.mes))}.</p>`}</section>`;
+}
+
+/* =====================================================================
+   7. VENTANA PARA CARGAR O EDITAR UN GASTO
+   ===================================================================== */
+function abrirHoja(gid){
+  const g = gid ? S.gastos[gid] : null;
+  const catDef = g ? g.cat : (S.vista!=='inicio' ? S.vista : '');
+  const fechaDef = g ? g.fecha : (S.mes===mesDe(hoy()) ? hoy() : S.mes+'-01');
+  const ops = Object.entries(S.cats).sort((a,b)=>a[1].nombre.localeCompare(b[1].nombre,'es'))
+    .map(([id,c])=>`<option value="${id}"${id===catDef?' selected':''}>${esc(c.nombre)}</option>`).join('');
+  const v = $('#velo');
+  v.innerHTML = `<form class="hoja" data-f="gasto" data-id="${gid||''}" role="dialog" aria-modal="true" aria-labelledby="hTit" novalidate>
+    <h3 id="hTit">${g?'Editar gasto':'Nuevo gasto'}</h3>
+    <div class="campo"><label for="fMonto">Monto</label><input id="fMonto" class="monto-in num" inputmode="decimal" autocomplete="off" placeholder="$0" value="${g?esc(nf.format(g.monto)):''}"><p class="err" id="eMonto" hidden></p></div>
+    <div class="dos">
+      <div class="campo"><label for="fCat">Categoría</label><select id="fCat">${catDef?'':'<option value="" selected disabled>Elegí una</option>'}${ops}<option value="__nueva">+ Nueva categoría…</option></select><p class="err" id="eCat" hidden></p></div>
+      <div class="campo"><label for="fFecha">Fecha</label><input type="date" id="fFecha" value="${fechaDef}" max="${hoy()}"><p class="err" id="eFecha" hidden></p></div>
+    </div>
+    <div class="campo" id="campoNueva" hidden><label for="fNueva">Nombre de la nueva categoría</label><input type="text" id="fNueva" maxlength="40" placeholder="Ej: Regalos"></div>
+    <div class="campo"><label for="fDesc">Descripción <span style="font-weight:400">(opcional)</span></label><input type="text" id="fDesc" maxlength="80" placeholder="Ej: SUBE, cena, libro" value="${g?esc(g.desc||''):''}"></div>
+    <div class="fin"><button type="button" class="btn" data-a="cerrar">Cancelar</button><button type="submit" class="btn pri">${g?'Guardar cambios':'Guardar gasto'}</button></div>
+  </form>`;
+  v.hidden = false;
+  const sel = $('#fCat');
+  sel.onchange = () => { const n = sel.value==='__nueva'; $('#campoNueva').hidden=!n; if(n) $('#fNueva').focus(); $('#eCat').hidden=true; };
+  if (!Object.keys(S.cats).length){ sel.value='__nueva'; $('#campoNueva').hidden=false; }
+  ['fMonto','fFecha','fNueva'].forEach(i => $('#'+i).addEventListener('input', () => document.querySelectorAll('.hoja .err').forEach(e=>e.hidden=true)));
+  setTimeout(() => $('#fMonto').focus(), 50);
+}
+function cerrarHoja(){ const v=$('#velo'); v.hidden=true; v.innerHTML=''; }
+function error(id,t){ const e=$('#'+id); e.textContent=t; e.hidden=false; }
+
+async function guardarGasto(form){
+  const monto=parseMonto($('#fMonto').value), cat=$('#fCat').value, fecha=$('#fFecha').value, desc=$('#fDesc').value.trim();
+  let ok = true;
+  if (!(monto>0)){ error('eMonto','Escribí un monto mayor a cero, por ejemplo 2500 o 2.500,50.'); ok=false; }
+  if (!cat){ error('eCat','Elegí una categoría.'); ok=false; }
+  if (cat==='__nueva' && !$('#fNueva').value.trim()){ error('eCat','Escribí el nombre de la nueva categoría.'); ok=false; }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)){ error('eFecha','Elegí una fecha.'); ok=false; }
+  if (!ok) return;
+  const gid = form.dataset.id;
+  await seguro(async () => {
+    const catId = cat==='__nueva' ? await crearCat($('#fNueva').value) : cat;
+    const prev = gid ? S.gastos[gid] : null;
+    cerrarHoja();
+    await db.guardarGasto(gid || nuevoId(), {monto, cat:catId, fecha, desc, creado:prev?.creado||Date.now()});
+    if (mesDe(fecha) !== S.mes){ S.mes=mesDe(fecha); S.on=-1; render(); }
+  }, gid ? 'Cambios guardados' : 'Gasto guardado en '+soloMes(fecha.slice(0,7)));
+}
+
+/* =====================================================================
+   8. CLICS Y FORMULARIOS: qué pasa cuando tocás cada cosa
+   ===================================================================== */
+document.addEventListener('click', async e => {
+  if (e.target.id === 'velo'){ cerrarHoja(); return; }
+  const b = e.target.closest('[data-a]'); if (!b) return;
+  const a = b.dataset.a, id = b.dataset.id;
+  if (a==='abrir'){ S.vista=id; S.on=-1; S.confirma=null; S.editaCat=false; render(); scrollTo(0,0); }
+  else if (a==='volver'){ S.vista='inicio'; S.confirma=null; S.editaCat=false; render(); }
+  else if (a==='cerrar') cerrarHoja();
+  else if (a==='sugerida') await seguro(() => crearCat(b.dataset.n));
+  else if (a==='editarG') abrirHoja(id);
+  else if (a==='pedirBorrarG'){ S.confirma='g:'+id; render(); }
+  else if (a==='pedirBorrarC'){ S.confirma='c:'+id; S.editaCat=false; render(); }
+  else if (a==='no'){ S.confirma=null; S.editaCat=false; render(); }
+  else if (a==='borrarG'){ S.confirma=null; await seguro(() => db.borrarGasto(id), 'Gasto borrado'); }
+  else if (a==='borrarC'){ const nombre=S.cats[id].nombre; S.confirma=null; S.vista='inicio'; await seguro(() => db.borrarCat(id), 'Borraste '+nombre); }
+  else if (a==='renombrarC'){ S.editaCat=true; S.confirma=null; render(); const i=$('#inRenombrar'); i.focus(); i.select(); }
+});
+document.addEventListener('submit', async e => {
+  const f = e.target, t = f.dataset.f; if (!t) return;
+  e.preventDefault();
+  if (t==='gasto') guardarGasto(f);
+  else if (t==='nuevaCat'){ const v=$('#inNuevaCat').value; if(!v.trim()) return; await seguro(() => crearCat(v), 'Categoría creada'); }
+  else if (t==='renombrar'){ const v=$('#inRenombrar').value.trim().replace(/\s+/g,' '); if(!v) return; const id=S.vista;
+    S.editaCat=false; await seguro(() => db.guardarCat(id, {...S.cats[id], nombre:v}), 'Nombre cambiado'); }
+});
+// Resaltar una porción de la torta al pasar el mouse
+document.addEventListener('mouseover', e => { const el=e.target.closest('[data-i]'); const i=el?Number(el.dataset.i):-1;
+  if (S.vista==='inicio' && el && i!==S.on && (el.closest('.dona')||el.classList.contains('fila'))){ S.on=i; actualizarDona(); } });
+document.addEventListener('mouseout', e => { if (S.on>=0 && !e.relatedTarget?.closest?.('[data-i]')){ S.on=-1; actualizarDona(); } });
+function actualizarDona(){ const d=document.querySelector('.dona'); if(!d) return; const {filas,total}=resumen(); d.outerHTML=dona(filas,total);
+  document.querySelectorAll('.fila').forEach(f=>f.classList.toggle('on', Number(f.dataset.i)===S.on)); }
+document.addEventListener('keydown', e => { if (e.key==='Escape' && !$('#velo').hidden) cerrarHoja(); });
+$('#mesAnt').onclick = () => { S.mes=moverMes(S.mes,-1); S.on=-1; S.confirma=null; render(); };
+$('#mesSig').onclick = () => { S.mes=moverMes(S.mes,1); S.on=-1; S.confirma=null; render(); };
+$('#btnAgregar').onclick = () => abrirHoja(null);
+
+/* =====================================================================
+   9. INICIAR SESIÓN Y CREAR CUENTA
+   ===================================================================== */
+const MENSAJES = {
+  'Invalid login credentials': 'El email o la contraseña no coinciden.',
+  'User already registered': 'Ya existe una cuenta con ese email. Tocá "Entrar".',
+  'Email not confirmed': 'Falta confirmar el email: revisá tu casilla y tocá el link que te llegó.'
+};
+function errLogin(t){ const e=$('#lErr'); e.textContent=t; e.hidden=false; }
+async function ingresar(crear){
+  const email=$('#lEmail').value.trim(), password=$('#lPass').value;
+  $('#lErr').hidden = true;
+  if (!email || !password) return errLogin('Completá el email y la contraseña.');
+  if (crear && password.length < 6) return errLogin('La contraseña tiene que tener al menos 6 caracteres.');
+  $('#lEntrar').disabled = $('#lCrear').disabled = true;
+  const { data, error } = crear ? await sb.auth.signUp({email, password}) : await sb.auth.signInWithPassword({email, password});
+  $('#lEntrar').disabled = $('#lCrear').disabled = false;
+  if (error) return errLogin(MENSAJES[error.message] || error.message);
+  if (crear && !data.session) errLogin('Te mandamos un email para confirmar la cuenta. Tocá el link y después entrá acá.');
+}
+$('#login').addEventListener('submit', e => { e.preventDefault(); ingresar(false); });
+$('#lCrear').onclick = () => ingresar(true);
+$('#btnSalir').onclick = () => sb.auth.signOut();
+
+// Muestra la pantalla de ingreso o la app, según si hay una sesión iniciada
+function mostrar(sesion){
+  $('#login').hidden = !!sesion;
+  $('#app').hidden = $('#pie').hidden = !sesion;
+  if (sesion && !S.listo){ render(); db.cargar().catch(e => { console.error(e); $('#main').innerHTML='<div class="card"><p class="vacio">No se pudieron cargar tus gastos. Revisá tu conexión y recargá la página.</p></div>'; }); }
+  if (!sesion){ S.listo=false; S.cats={}; S.gastos={}; S.vista='inicio'; }
+}
+// (el setTimeout evita un bloqueo conocido de Supabase si se hacen pedidos dentro de este aviso)
+sb.auth.onAuthStateChange((_evento, sesion) => setTimeout(() => mostrar(sesion), 0));
+</script>
+</body>
+</html>
