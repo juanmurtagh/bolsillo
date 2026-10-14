@@ -127,11 +127,18 @@ input:focus,select:focus{border-color:var(--accent);outline:none}
 .chip:hover{border-style:solid;background:var(--soft)}
 
 /* ============ PANTALLA DE INGRESO ============ */
-.login{max-width:400px;margin:12vh auto 0;display:flex;flex-direction:column;gap:14px}
-.login h1{font-size:38px}
-.logo-login{width:88px;height:88px;border-radius:22px}
-.login .dos-btn{display:flex;gap:8px}
-.login .dos-btn .btn{flex:1}
+.login{max-width:400px;margin:10vh auto 0;display:flex;flex-direction:column;gap:14px}
+   .login .portada{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;margin-bottom:8px}
+   .login h1{font-size:40px}
+   .login .frase{margin:0;color:var(--muted);font-size:15px;max-width:30ch;text-wrap:balance}
+   .logo-login{width:88px;height:88px;border-radius:22px}
+   .login .btn.pri{width:100%;height:48px;margin-top:4px}
+   .pass{position:relative}
+   .pass input{padding-right:84px}
+   .ver{position:absolute;right:6px;top:50%;transform:translateY(-50%);height:32px;padding:0 10px;border:0;border-radius:8px;background:transparent;color:var(--accent);font-weight:600;font-size:13px}
+   .ver:hover{background:var(--soft)}
+   .cambiar{text-align:center;margin:0;color:var(--muted);font-size:14px}
+   .cambiar button{background:none;border:0;padding:0;color:var(--accent);font-weight:600}
 
 /* ============ BOTÓN FIJO Y VENTANA DE CARGA ============ */
 .pie{position:fixed;left:0;right:0;bottom:0;padding:12px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
@@ -153,18 +160,20 @@ input:focus,select:focus{border-color:var(--accent);outline:none}
 <body>
 
 <!-- ============ PANTALLA DE INGRESO (se muestra si no iniciaste sesión) ============ -->
-<form id="login" class="login" hidden novalidate>
-  <img src="logo.png" alt="Logo de Bolsillo" class="logo-login">
-  <p class="eyebrow">Mis gastos</p>
-  <h1>Bolsillo</h1>
-  <div class="campo"><label for="lEmail">Email</label><input type="email" id="lEmail" autocomplete="email"></div>
-  <div class="campo"><label for="lPass">Contraseña</label><input type="password" id="lPass" autocomplete="current-password" placeholder="Mínimo 6 caracteres"></div>
-  <p class="err" id="lErr" hidden></p>
-  <div class="dos-btn">
-    <button type="submit" class="btn pri" id="lEntrar">Entrar</button>
-    <button type="button" class="btn" id="lCrear">Crear cuenta</button>
-  </div>
-</form>
+ <form id="login" class="login" hidden novalidate>
+     <div class="portada">
+       <img src="logo.png" alt="Logo de Bolsillo" class="logo-login">
+       <h1>Bolsillo</h1>
+       <p class="frase">Para que fin de mes no te agarre por sorpresa.</p>
+     </div>
+     <div class="campo"><label for="lEmail">Email</label><input type="email" id="lEmail" autocomplete="email" placeholder="tu@email.com"></div>
+     <div class="campo"><label for="lPass">Contraseña</label>
+       <div class="pass"><input type="password" id="lPass" autocomplete="current-password"><button type="button" class="ver" id="lVer">Mostrar</button></div>
+     </div>
+     <p class="err" id="lErr" hidden></p>
+     <button type="submit" class="btn pri" id="lEntrar">Entrar</button>
+     <p class="cambiar"><span id="lPregunta">¿No tenés cuenta?</span> <button type="button" id="lCambiar">Creá una</button></p>
+   </form>
 
 <!-- ============ LA APLICACIÓN (se muestra una vez que entraste) ============ -->
 <div id="app" class="wrap" hidden>
@@ -473,21 +482,39 @@ const MENSAJES = {
   'User already registered': 'Ya existe una cuenta con ese email. Tocá "Entrar".',
   'Email not confirmed': 'Falta confirmar el email: revisá tu casilla y tocá el link que te llegó.'
 };
-function errLogin(t){ const e=$('#lErr'); e.textContent=t; e.hidden=false; }
-async function ingresar(crear){
-  const email=$('#lEmail').value.trim(), password=$('#lPass').value;
-  $('#lErr').hidden = true;
-  if (!email || !password) return errLogin('Completá el email y la contraseña.');
-  if (crear && password.length < 6) return errLogin('La contraseña tiene que tener al menos 6 caracteres.');
-  $('#lEntrar').disabled = $('#lCrear').disabled = true;
-  const { data, error } = crear ? await sb.auth.signUp({email, password}) : await sb.auth.signInWithPassword({email, password});
-  $('#lEntrar').disabled = $('#lCrear').disabled = false;
-  if (error) return errLogin(MENSAJES[error.message] || error.message);
-  if (crear && !data.session) errLogin('Te mandamos un email para confirmar la cuenta. Tocá el link y después entrá acá.');
-}
-$('#login').addEventListener('submit', e => { e.preventDefault(); ingresar(false); });
-$('#lCrear').onclick = () => ingresar(true);
-$('#btnSalir').onclick = () => sb.auth.signOut();
+   let modoCrear = false;   // false = pantalla "Entrar", true = pantalla "Crear cuenta"
+   function errLogin(t){ const e=$('#lErr'); e.textContent=t; e.hidden=false; }
+   // Cambia la pantalla entre "Entrar" y "Crear cuenta"
+   function ponerModo(crear){
+     modoCrear = crear;
+     $('#lEntrar').textContent = crear ? 'Crear cuenta' : 'Entrar';
+     $('#lPregunta').textContent = crear ? '¿Ya tenés cuenta?' : '¿No tenés cuenta?';
+     $('#lCambiar').textContent = crear ? 'Entrá' : 'Creá una';
+     $('#lPass').placeholder = crear ? 'Mínimo 6 caracteres' : '';
+     $('#lPass').autocomplete = crear ? 'new-password' : 'current-password';
+     $('#lErr').hidden = true;
+   }
+   async function ingresar(){
+     const crear = modoCrear;
+     const email=$('#lEmail').value.trim(), password=$('#lPass').value;
+     $('#lErr').hidden = true;
+     if (!email || !password) return errLogin('Completá el email y la contraseña.');
+     if (crear && password.length < 6) return errLogin('La contraseña tiene que tener al menos 6 caracteres.');
+     $('#lEntrar').disabled = true;
+     const { data, error } = crear ? await sb.auth.signUp({email, password}) : await sb.auth.signInWithPassword({email, password});
+     $('#lEntrar').disabled = false;
+     if (error) return errLogin(MENSAJES[error.message] || error.message);
+     if (crear && !data.session) errLogin('Te mandamos un email para confirmar la cuenta. Tocá el link y después entrá acá.');
+   }
+   $('#login').addEventListener('submit', e => { e.preventDefault(); ingresar(); });
+   $('#lCambiar').onclick = () => ponerModo(!modoCrear);
+   // Botón "Mostrar": cambia la contraseña entre puntitos y texto visible
+   $('#lVer').onclick = () => {
+     const p = $('#lPass'); const ver = p.type === 'password';
+     p.type = ver ? 'text' : 'password';
+     $('#lVer').textContent = ver ? 'Ocultar' : 'Mostrar';
+   };
+   $('#btnSalir').onclick = () => sb.auth.signOut();
 
 // Muestra la pantalla de ingreso o la app, según si hay una sesión iniciada
 function mostrar(sesion){
