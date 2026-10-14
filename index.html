@@ -126,6 +126,29 @@ input:focus,select:focus{border-color:var(--accent);outline:none}
 .chip{height:36px;padding:0 14px;border-radius:999px;border:1px dashed var(--line);background:transparent;font-weight:500}
 .chip:hover{border-style:solid;background:var(--soft)}
 
+ /* ============ CALENDARIO ============ */
+   .pestanas{display:flex;background:var(--soft);border-radius:12px;padding:4px;gap:4px}
+   .pestanas button{flex:1;height:38px;border:0;border-radius:9px;background:transparent;font-weight:600;color:var(--muted)}
+   .pestanas button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+   .cal{display:flex;flex-direction:column;gap:12px}
+   .cal-cab{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+   .cal-cab b{font-family:var(--display);font-size:22px}
+   .semana,.grilla{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+   .semana span{text-align:center;font-size:11px;font-weight:600;color:var(--muted)}
+   .dia{aspect-ratio:1/1.05;min-width:0;padding:0;border:1.5px solid transparent;border-radius:9px;font-size:13px;
+     display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+     background:color-mix(in srgb, var(--accent) calc(var(--nivel, 0) * 100%), transparent)}
+   .dia small{font-size:10px;font-weight:600;line-height:1}
+   .dia.fuerte{color:var(--accent-ink)}
+   .dia.hoy b{text-decoration:underline;text-underline-offset:3px}
+   .dia:disabled{opacity:.3;cursor:default}
+   .dia:not(:disabled):hover{border-color:var(--line)}
+   .dia.sel,.dia.sel:hover{border-color:var(--ink)}
+   .det{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:12px}
+   .det-cab{display:flex;justify-content:space-between;gap:12px}
+   .det .fecha{display:none}
+   .det .gasto{grid-template-columns:minmax(0,1fr) auto auto}
+   #main{width:100%}
 /* ============ PANTALLA DE INGRESO ============ */
 .login{max-width:400px;margin:10vh auto 0;display:flex;flex-direction:column;gap:14px}
    .login .portada{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;margin-bottom:8px}
@@ -348,7 +371,7 @@ function render(){
   if (!S.listo){ m.innerHTML='<div class="card"><p class="vacio">Cargando tus gastos…</p></div>'; return; }
   if (S.vista!=='inicio' && !S.cats[S.vista]) S.vista='inicio';
   $('#btnAgregar').textContent = S.vista==='inicio' ? '+ Agregar gasto' : '+ Agregar gasto en '+S.cats[S.vista].nombre;
-  m.innerHTML = S.vista==='inicio' ? vistaInicio() : vistaCat(S.vista);
+       m.innerHTML = S.vista!=='inicio' ? vistaCat(S.vista) : !Object.keys(S.cats).length ? vistaInicio() : pestanas() + (S.pestana==='calendario' ? vistaCalendario() : vistaInicio());
 }
 
 function vistaInicio(){
@@ -388,12 +411,64 @@ function vistaCat(id){
 }
 
 /* =====================================================================
+   6b. CALENDARIO DEL MES
+   ===================================================================== */
+// Pestañas de arriba: "Resumen" (la torta) o "Calendario"
+function pestanas(){
+  const cal = S.pestana === 'calendario';
+  return `<div class="pestanas" role="tablist">
+    <button role="tab" aria-selected="${!cal}" class="${cal?'':'on'}" data-a="pestana" data-p="resumen">Resumen</button>
+    <button role="tab" aria-selected="${cal}" class="${cal?'on':''}" data-a="pestana" data-p="calendario">Calendario</button></div>`;
+}
+// Montos cortos para que entren en cada día: 7800 -> $7,8k
+const nf1 = new Intl.NumberFormat('es-AR', {maximumFractionDigits:1});
+function corto(v){ return v >= 1e6 ? '$'+nf1.format(v/1e6)+'M' : v >= 1000 ? '$'+nf1.format(v/1000)+'k' : '$'+Math.round(v); }
+
+function vistaCalendario(){
+  const [y, m] = S.mes.split('-').map(Number);
+  const diasDelMes = new Date(y, m, 0).getDate();
+  const huecos = (new Date(y, m-1, 1).getDay() + 6) % 7;   // cuántos días vacíos antes del 1 (la semana arranca el lunes)
+  const hoyF = hoy();
+  // Agrupar los gastos del mes por fecha
+  const porDia = {};
+  delMes().forEach(g => { (porDia[g.fecha] = porDia[g.fecha] || []).push(g); });
+  const totalDia = f => (porDia[f] || []).reduce((s, g) => s + g.monto, 0);
+  const maximo = Math.max(0, ...Object.keys(porDia).map(totalDia));
+  const totalMes = Object.keys(porDia).reduce((s, f) => s + totalDia(f), 0);
+  // Día elegido: si no hay uno de este mes, se elige hoy (o ninguno si es otro mes)
+  if (!S.diaSel || mesDe(S.diaSel) !== S.mes) S.diaSel = S.mes === mesDe(hoyF) ? hoyF : null;
+
+  let celdas = '<span></span>'.repeat(huecos);
+  for (let d = 1; d <= diasDelMes; d++){
+    const f = S.mes + '-' + String(d).padStart(2,'0');
+    const t = totalDia(f);
+    const nivel = t ? 0.15 + 0.6 * t / maximo : 0;   // más gasto = verde más intenso
+    const clases = ['dia', f===S.diaSel?'sel':'', f===hoyF?'hoy':'', nivel>0.5?'fuerte':''].join(' ');
+    celdas += `<button class="${clases}" data-a="dia" data-f="${f}" ${f>hoyF?'disabled':''} style="--nivel:${nivel.toFixed(2)}" aria-label="${d}: ${plata(t)}"><b>${d}</b>${t?`<small class="num">${corto(t)}</small>`:''}</button>`;
+  }
+
+  let detalle = '<p class="vacio">Tocá un día para ver sus gastos.</p>';
+  if (S.diaSel){
+    const gs = porDia[S.diaSel] || [];
+    let titulo = new Date(S.diaSel+'T12:00').toLocaleDateString('es-AR', {weekday:'long', day:'numeric', month:'long'}).replace(',', '');
+    titulo = S.diaSel === hoyF ? 'Hoy, ' + titulo : titulo.charAt(0).toUpperCase() + titulo.slice(1);
+    detalle = `<div class="det-cab"><b>${esc(titulo)}</b><b class="num">${plata(totalDia(S.diaSel))}</b></div>
+      ${gs.length ? `<div class="gastos">${gs.map(g => filaGasto(g, true)).join('')}</div>` : '<p class="vacio">No gastaste nada este día.</p>'}
+      <button class="btn chico" data-a="agregarDia" data-f="${S.diaSel}" style="align-self:center">+ Agregar gasto en este día</button>`;
+  }
+  return `<section class="card cal">
+    <div class="cal-cab"><span class="eyebrow">Total de ${esc(soloMes(S.mes))}</span><b class="num">${plata(totalMes)}</b></div>
+    <div class="semana"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+    <div class="grilla">${celdas}</div>
+    <div class="det">${detalle}</div></section>`;
+}
+/* =====================================================================
    7. VENTANA PARA CARGAR O EDITAR UN GASTO
    ===================================================================== */
-function abrirHoja(gid){
+function abrirHoja(gid, fechaElegida){
   const g = gid ? S.gastos[gid] : null;
   const catDef = g ? g.cat : (S.vista!=='inicio' ? S.vista : '');
-  const fechaDef = g ? g.fecha : (S.mes===mesDe(hoy()) ? hoy() : S.mes+'-01');
+  const fechaDef = g ? g.fecha : (fechaElegida || (S.mes===mesDe(hoy()) ? hoy() : S.mes+'-01'));
   const ops = Object.entries(S.cats).sort((a,b)=>a[1].nombre.localeCompare(b[1].nombre,'es'))
     .map(([id,c])=>`<option value="${id}"${id===catDef?' selected':''}>${esc(c.nombre)}</option>`).join('');
   const v = $('#velo');
@@ -446,6 +521,9 @@ document.addEventListener('click', async e => {
   if (a==='abrir'){ S.vista=id; S.on=-1; S.confirma=null; S.editaCat=false; render(); scrollTo(0,0); }
   else if (a==='volver'){ S.vista='inicio'; S.confirma=null; S.editaCat=false; render(); }
   else if (a==='cerrar') cerrarHoja();
+  else if (a==='pestana'){ S.pestana=b.dataset.p; S.confirma=null; render(); }
+  else if (a==='dia'){ S.diaSel=b.dataset.f; S.confirma=null; render(); }
+  else if (a==='agregarDia') abrirHoja(null, b.dataset.f);
   else if (a==='sugerida') await seguro(() => crearCat(b.dataset.n));
   else if (a==='editarG') abrirHoja(id);
   else if (a==='pedirBorrarG'){ S.confirma='g:'+id; render(); }
