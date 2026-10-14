@@ -365,7 +365,7 @@ function resumen(){
    Cada vez que algo cambia, render() arma de nuevo el contenido.
    ===================================================================== */
 const ICO = {
-  edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>',
+  rep:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v5h-5"/></svg>',edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>',
   del:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M5 7l1 13h12l1-13M9 7V4h6v3"/></svg>'
 };
 
@@ -387,7 +387,7 @@ function filaGasto(g, conCat){
   return `<div class="gasto"><div class="fecha"><b class="num">${d.getDate()}</b><small>${esc(d.toLocaleDateString('es-AR',{weekday:'short'}).replace('.',''))}</small></div>
     <div class="txt"><div>${g.desc?esc(g.desc):'<span style="color:var(--muted)">Sin descripción</span>'}</div>${conCat?`<small style="--c:var(--s${c.color})"><i></i>${esc(c.nombre)}</small>`:''}</div>
     <div class="monto num">${plata(g.monto)}</div>
-    <div class="acc"><button class="ico" data-a="editarG" data-id="${g.id}" aria-label="Editar gasto">${ICO.edit}</button><button class="ico" data-a="pedirBorrarG" data-id="${g.id}" aria-label="Borrar gasto">${ICO.del}</button></div>${conf}</div>`;
+    <div class="acc"><button class="ico" data-a="repetirG" data-id="${g.id}" aria-label="Repetir gasto">${ICO.rep}</button><button class="ico" data-a="editarG" data-id="${g.id}" aria-label="Editar gasto">${ICO.edit}</button><button class="ico" data-a="pedirBorrarG" data-id="${g.id}" aria-label="Borrar gasto">${ICO.del}</button></div>${conf}</div>`;
 }
 
 function render(){
@@ -522,7 +522,15 @@ function abrirHoja(gid, fechaElegida){
   ['fMonto','fFecha','fNueva'].forEach(i => $('#'+i).addEventListener('input', () => document.querySelectorAll('.hoja .err').forEach(e=>e.hidden=true)));
   setTimeout(() => $('#fMonto').focus(), 50);
 }
-// Animación: una moneda cae en la billetera cuando guardás un gasto
+   // Repetir: abre la ventana de un gasto nuevo, ya completa con los datos de otro
+   function repetirGasto(id){
+     const g = S.gastos[id];
+     abrirHoja(null, hoy());
+     $('#fMonto').value = nf.format(g.monto);
+     $('#fCat').value = g.cat;
+     $('#fDesc').value = g.desc || '';
+   }
+   // Animación: una moneda cae en la billetera cuando guardás un gasto
    function festejar(){
      if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;   // respeta a quien pide menos movimiento
      const el = document.createElement('div');
@@ -574,6 +582,7 @@ document.addEventListener('click', async e => {
   else if (a==='colorC'){ const id=S.vista; await seguro(() => db.guardarCat(id, {...S.cats[id], color:Number(b.dataset.c)}), 'Color cambiado'); }
   else if (a==='sugerida') await seguro(() => crearCat(b.dataset.n));
   else if (a==='editarG') abrirHoja(id);
+  else if (a==='repetirG') repetirGasto(id);
   else if (a==='pedirBorrarG'){ S.confirma='g:'+id; render(); }
   else if (a==='pedirBorrarC'){ S.confirma='c:'+id; S.editaCat=false; render(); }
   else if (a==='no'){ S.confirma=null; S.editaCat=false; render(); }
