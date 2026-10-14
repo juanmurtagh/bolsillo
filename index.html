@@ -28,11 +28,22 @@
   --r:12px;
 }
 /* Modo oscuro: si el celular o la compu están en modo oscuro, se usan estos colores */
-@media (prefers-color-scheme: dark){:root{
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#0A0C0B; --surface:#121614; --soft:#1E2622; --ink:#EFEADB; --muted:#9FA59F; --line:#222A25;
   --accent:#4CC383; --accent-ink:#06150D; --danger:#F08A80;
   --s0:#3987e5; --s1:#d95926; --s2:#199e70; --s3:#c98500; --s4:#d55181; --s5:#2f9a2f; --s6:#9085e9; --s7:#e66767;
   color-scheme:dark}}
+  /* Modo oscuro elegido a mano con el botón (mismos colores que arriba) */
+   :root[data-theme="dark"]{
+     --bg:#0A0C0B; --surface:#121614; --soft:#1E2622; --ink:#EFEADB; --muted:#9FA59F; --line:#222A25;
+     --accent:#4CC383; --accent-ink:#06150D; --danger:#F08A80;
+     --s0:#3987e5; --s1:#d95926; --s2:#199e70; --s3:#c98500; --s4:#d55181; --s5:#2f9a2f; --s6:#9085e9; --s7:#e66767;
+     color-scheme:dark}
+   /* Botón de apariencia: Auto / Claro / Oscuro */
+   .tema{display:inline-flex;align-self:center;background:var(--soft);border-radius:999px;padding:3px;gap:2px}
+   .tema button{border:0;background:transparent;border-radius:999px;padding:5px 12px;font-size:13px;font-weight:600;color:var(--muted)}
+   .tema button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+   .pie-app{display:flex;justify-content:center;padding-top:8px}
 
 *{box-sizing:border-box}
 html{padding-top:env(safe-area-inset-top,0px)}
@@ -130,7 +141,16 @@ input:focus,select:focus{border-color:var(--accent);outline:none}
 .chip{height:36px;padding:0 14px;border-radius:999px;border:1px dashed var(--line);background:transparent;font-weight:500}
 .chip:hover{border-style:solid;background:var(--soft)}
 
- /* ============ CALENDARIO ============ */
+ /* ============ ANIMACIÓN AL GUARDAR ============ */
+   .festejo{position:fixed;left:50%;top:40%;width:96px;height:96px;margin-left:-48px;pointer-events:none;z-index:30;animation:desvanecer .3s 1.05s forwards}
+   .festejo svg{width:100%;height:100%;overflow:visible}
+   .festejo g{transform-box:fill-box;transform-origin:50% 100%}
+   .festejo .moneda{animation:caer .5s cubic-bezier(.55,0,.8,.3) both}
+   .festejo .billetera{animation:rebote .4s .45s ease-out both}
+   @keyframes caer{from{transform:translateY(-70px);opacity:0}30%{opacity:1}to{transform:translateY(0)}}
+   @keyframes rebote{0%{transform:scale(1)}35%{transform:scale(1.12,.88)}70%{transform:scale(.97,1.04)}100%{transform:scale(1)}}
+   @keyframes desvanecer{to{opacity:0;transform:scale(.9)}}
+   /* ============ CALENDARIO ============ */
    .pestanas{display:flex;background:var(--soft);border-radius:12px;padding:4px;gap:4px}
    .pestanas button{flex:1;height:38px;border:0;border-radius:9px;background:transparent;font-weight:600;color:var(--muted)}
    .pestanas button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
@@ -200,6 +220,7 @@ input:focus,select:focus{border-color:var(--accent);outline:none}
      <p class="err" id="lErr" hidden></p>
      <button type="submit" class="btn pri" id="lEntrar">Entrar</button>
      <p class="cambiar"><span id="lPregunta">¿No tenés cuenta?</span> <button type="button" id="lCambiar">Creá una</button></p>
+     <div class="tema" role="group" aria-label="Apariencia"><button type="button" data-tema="auto">Auto</button><button type="button" data-tema="claro">Claro</button><button type="button" data-tema="oscuro">Oscuro</button></div>
    </form>
 
 <!-- ============ LA APLICACIÓN (se muestra una vez que entraste) ============ -->
@@ -216,6 +237,7 @@ input:focus,select:focus{border-color:var(--accent);outline:none}
     </div>
   </header>
   <main id="main" class="wrap"></main>
+  <footer class="pie-app"><div class="tema" role="group" aria-label="Apariencia"><button type="button" data-tema="auto">Auto</button><button type="button" data-tema="claro">Claro</button><button type="button" data-tema="oscuro">Oscuro</button></div></footer>
 </div>
 
 <div class="pie" id="pie" hidden><button id="btnAgregar" class="btn pri">+ Agregar gasto</button></div>
@@ -500,6 +522,20 @@ function abrirHoja(gid, fechaElegida){
   ['fMonto','fFecha','fNueva'].forEach(i => $('#'+i).addEventListener('input', () => document.querySelectorAll('.hoja .err').forEach(e=>e.hidden=true)));
   setTimeout(() => $('#fMonto').focus(), 50);
 }
+// Animación: una moneda cae en la billetera cuando guardás un gasto
+   function festejar(){
+     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;   // respeta a quien pide menos movimiento
+     const el = document.createElement('div');
+     el.className = 'festejo';
+     el.innerHTML = `<svg viewBox="0 0 100 100" aria-hidden="true">
+       <circle cx="50" cy="50" r="48" style="fill:var(--accent)"/>
+       <g class="moneda"><circle cx="50" cy="42" r="13" fill="#E3A11B"/><text x="50" y="48" text-anchor="middle" font-size="16" font-weight="700" font-family="sans-serif" fill="#2E6B48">$</text></g>
+       <g class="billetera"><rect x="20" y="47" width="58" height="33" rx="9" fill="#FFFCF4"/>
+         <rect x="62" y="56" width="21" height="15" rx="7.5" fill="#FFFCF4" style="stroke:var(--accent)" stroke-width="3"/>
+         <circle cx="71" cy="63.5" r="2.6" style="fill:var(--accent)"/></g></svg>`;
+     document.body.appendChild(el);
+     setTimeout(() => el.remove(), 1400);   // la saca de la pantalla cuando termina
+   }
 function cerrarHoja(){ const v=$('#velo'); v.hidden=true; v.innerHTML=''; }
 function error(id,t){ const e=$('#'+id); e.textContent=t; e.hidden=false; }
 
@@ -517,6 +553,7 @@ async function guardarGasto(form){
     const prev = gid ? S.gastos[gid] : null;
     cerrarHoja();
     await db.guardarGasto(gid || nuevoId(), {monto, cat:catId, fecha, desc, creado:prev?.creado||Date.now()});
+    if (!gid) festejar();   // solo en gastos nuevos, no al editar
     if (mesDe(fecha) !== S.mes){ S.mes=mesDe(fecha); S.on=-1; render(); }
   }, gid ? 'Cambios guardados' : 'Gasto guardado en '+soloMes(fecha.slice(0,7)));
 }
@@ -604,6 +641,21 @@ const MENSAJES = {
      $('#lVer').textContent = ver ? 'Ocultar' : 'Mostrar';
    };
    $('#btnSalir').onclick = () => sb.auth.signOut();
+   // Modo claro / oscuro: se aplica y se recuerda en este dispositivo
+   function aplicarTema(t){
+     if (t === 'claro') document.documentElement.dataset.theme = 'light';
+     else if (t === 'oscuro') document.documentElement.dataset.theme = 'dark';
+     else delete document.documentElement.dataset.theme;   // "auto": sigue al celular o la compu
+     document.querySelectorAll('[data-tema]').forEach(b => b.classList.toggle('on', b.dataset.tema === t));
+   }
+   let temaGuardado = 'auto';
+   try { temaGuardado = localStorage.getItem('bolsillo-tema') || 'auto'; } catch(e){}
+   aplicarTema(temaGuardado);
+   document.addEventListener('click', e => {
+     const b = e.target.closest('[data-tema]'); if (!b) return;
+     try { localStorage.setItem('bolsillo-tema', b.dataset.tema); } catch(e){}
+     aplicarTema(b.dataset.tema);
+   });
 
 // Muestra la pantalla de ingreso o la app, según si hay una sesión iniciada
 function mostrar(sesion){
