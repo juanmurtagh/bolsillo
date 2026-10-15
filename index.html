@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
 <title>Bolsillo</title>
 <meta name="theme-color" content="#F4EFE2">
 <link rel="icon" type="image/png" href="favicon.png">
@@ -20,8 +20,8 @@
    Todos los colores están definidos acá una sola vez como "variables" (--nombre).
    El resto del código las usa, así que para cambiar un color alcanza con tocarlo acá. */
 :root{
-    --bg:#F4EFE2; --surface:#FFFCF4; --soft:#EBE4D2; --ink:#1F2A22; --muted:#6A6656; --line:#E2D9C3;
-    --accent:#2E6B48; --accent-ink:#FFFCF4; --danger:#B03A2E;
+  --bg:#F4EFE2; --surface:#FFFCF4; --soft:#EBE4D2; --ink:#1F2A22; --muted:#6A6656; --line:#E2D9C3;
+  --accent:#2E6B48; --accent-ink:#FFFCF4; --danger:#B03A2E;
   --s0:#2a78d6; --s1:#eb6834; --s2:#1baf7a; --s3:#eda100; --s4:#e87ba4; --s5:#008300; --s6:#6250d6; --s7:#e34948;
   --display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
   --body:'Figtree',system-ui,-apple-system,'Segoe UI',sans-serif;
@@ -33,18 +33,21 @@
   --accent:#4CC383; --accent-ink:#06150D; --danger:#F08A80;
   --s0:#3987e5; --s1:#d95926; --s2:#199e70; --s3:#c98500; --s4:#d55181; --s5:#2f9a2f; --s6:#9085e9; --s7:#e66767;
   color-scheme:dark}}
-  /* Modo oscuro elegido a mano con el botón (mismos colores que arriba) */
-   :root[data-theme="dark"]{
-     --bg:#0A0C0B; --surface:#121614; --soft:#1E2622; --ink:#EFEADB; --muted:#9FA59F; --line:#222A25;
-     --accent:#4CC383; --accent-ink:#06150D; --danger:#F08A80;
-     --s0:#3987e5; --s1:#d95926; --s2:#199e70; --s3:#c98500; --s4:#d55181; --s5:#2f9a2f; --s6:#9085e9; --s7:#e66767;
-     color-scheme:dark}
-   /* Botón de apariencia: Auto / Claro / Oscuro */
-   .tema{display:inline-flex;align-self:center;background:var(--soft);border-radius:999px;padding:3px;gap:2px}
-   .tema button{border:0;background:transparent;border-radius:999px;padding:5px 12px;font-size:13px;font-weight:600;color:var(--muted)}
-   .tema button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
-   .pie-app{display:flex;justify-content:center;padding-top:8px}
+/* Modo oscuro elegido a mano con el botón (mismos colores que arriba) */
+:root[data-theme="dark"]{
+  --bg:#0A0C0B; --surface:#121614; --soft:#1E2622; --ink:#EFEADB; --muted:#9FA59F; --line:#222A25;
+  --accent:#4CC383; --accent-ink:#06150D; --danger:#F08A80;
+  --s0:#3987e5; --s1:#d95926; --s2:#199e70; --s3:#c98500; --s4:#d55181; --s5:#2f9a2f; --s6:#9085e9; --s7:#e66767;
+  color-scheme:dark}
+/* Botón de apariencia: Auto / Claro / Oscuro */
+.tema{display:inline-flex;align-self:center;background:var(--soft);border-radius:999px;padding:3px;gap:2px}
+.tema button{border:0;background:transparent;border-radius:999px;padding:5px 12px;font-size:13px;font-weight:600;color:var(--muted)}
+.tema button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.pie-app{display:flex;justify-content:center;padding-top:8px}
 
+/* Sin zoom: el celular no agranda la pantalla al tocar un campo ni con doble toque */
+html{touch-action:manipulation;-webkit-text-size-adjust:100%}
+input,select,textarea{font-size:16px!important}
 *{box-sizing:border-box}
 html{padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;
@@ -141,51 +144,88 @@ input:focus,select:focus{border-color:var(--accent);outline:none}
 .chip{height:36px;padding:0 14px;border-radius:999px;border:1px dashed var(--line);background:transparent;font-weight:500}
 .chip:hover{border-style:solid;background:var(--soft)}
 
- /* ============ ANIMACIÓN AL GUARDAR ============ */
-   .festejo{position:fixed;left:50%;top:40%;width:96px;height:96px;margin-left:-48px;pointer-events:none;z-index:30;animation:desvanecer .3s 1.05s forwards}
-   .festejo svg{width:100%;height:100%;overflow:visible}
-   .festejo g{transform-box:fill-box;transform-origin:50% 100%}
-   .festejo .moneda{animation:caer .5s cubic-bezier(.55,0,.8,.3) both}
-   .festejo .billetera{animation:rebote .4s .45s ease-out both}
-   @keyframes caer{from{transform:translateY(-70px);opacity:0}30%{opacity:1}to{transform:translateY(0)}}
-   @keyframes rebote{0%{transform:scale(1)}35%{transform:scale(1.12,.88)}70%{transform:scale(.97,1.04)}100%{transform:scale(1)}}
-   @keyframes desvanecer{to{opacity:0;transform:scale(.9)}}
-   /* ============ CALENDARIO ============ */
-   .pestanas{display:flex;background:var(--soft);border-radius:12px;padding:4px;gap:4px}
-   .pestanas button{flex:1;height:38px;border:0;border-radius:9px;background:transparent;font-weight:600;color:var(--muted)}
-   .pestanas button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
-   .cal{display:flex;flex-direction:column;gap:12px}
-   .cal-cab{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
-   .cal-cab b{font-family:var(--display);font-size:22px}
-   .semana,.grilla{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
-   .semana span{text-align:center;font-size:11px;font-weight:600;color:var(--muted)}
-   .dia{aspect-ratio:1/1.05;min-width:0;padding:0;border:1.5px solid transparent;border-radius:9px;font-size:13px;
-     display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
-     background:color-mix(in srgb, var(--accent) calc(var(--nivel, 0) * 100%), transparent)}
-   .dia small{font-size:10px;font-weight:600;line-height:1}
-   .dia.fuerte{color:var(--accent-ink)}
-   .dia.hoy b{text-decoration:underline;text-underline-offset:3px}
-   .dia:disabled{opacity:.3;cursor:default}
-   .dia:not(:disabled):hover{border-color:var(--line)}
-   .dia.sel,.dia.sel:hover{border-color:var(--ink)}
-   .det{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:12px}
-   .det-cab{display:flex;justify-content:space-between;gap:12px}
-   .det .fecha{display:none}
-   .det .gasto{grid-template-columns:minmax(0,1fr) auto auto}
-   #main{width:100%}
+/* ============ BUSCADOR ============ */
+.busqueda{position:relative}
+.busqueda svg{position:absolute;left:14px;top:50%;width:18px;height:18px;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.busqueda input{width:100%;height:46px;border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:0 14px 0 42px}
+.busqueda input:focus{border-color:var(--accent);outline:none}
+.grupo{display:flex;justify-content:space-between;margin:14px 0 2px}
+
+/* ============ ANIMACIÓN AL GUARDAR ============ */
+.festejo{position:fixed;left:50%;top:40%;width:96px;height:96px;margin-left:-48px;pointer-events:none;z-index:30;animation:desvanecer .3s 1.05s forwards}
+.festejo svg{width:100%;height:100%;overflow:visible}
+.festejo g{transform-box:fill-box;transform-origin:50% 100%}
+.festejo .moneda{animation:caer .5s cubic-bezier(.55,0,.8,.3) both}
+.festejo .billetera{animation:rebote .4s .45s ease-out both}
+@keyframes caer{from{transform:translateY(-70px);opacity:0}30%{opacity:1}to{transform:translateY(0)}}
+@keyframes rebote{0%{transform:scale(1)}35%{transform:scale(1.12,.88)}70%{transform:scale(.97,1.04)}100%{transform:scale(1)}}
+@keyframes desvanecer{to{opacity:0;transform:scale(.9)}}
+
+/* ============ CALENDARIO ============ */
+.pestanas{display:flex;background:var(--soft);border-radius:12px;padding:4px;gap:4px}
+.pestanas button{flex:1;height:38px;border:0;border-radius:9px;background:transparent;font-weight:600;color:var(--muted)}
+.pestanas button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.cal{display:flex;flex-direction:column;gap:12px}
+.cal-cab{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.cal-cab b{font-family:var(--display);font-size:22px}
+.semana,.grilla{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.semana span{text-align:center;font-size:11px;font-weight:600;color:var(--muted)}
+.dia{aspect-ratio:1/1.05;min-width:0;padding:0;border:1.5px solid transparent;border-radius:9px;font-size:13px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  background:color-mix(in srgb, var(--accent) calc(var(--nivel, 0) * 100%), transparent)}
+.dia small{font-size:10px;font-weight:600;line-height:1}
+.dia.fuerte{color:var(--accent-ink)}
+.dia.hoy b{text-decoration:underline;text-underline-offset:3px}
+.dia:disabled{opacity:.3;cursor:default}
+.dia:not(:disabled):hover{border-color:var(--line)}
+.dia.sel,.dia.sel:hover{border-color:var(--ink)}
+.det{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:12px}
+.det-cab{display:flex;justify-content:space-between;gap:12px}
+.det .fecha{display:none}
+.det .gasto{grid-template-columns:minmax(0,1fr) auto auto}
+#main{width:100%}
+
 /* ============ PANTALLA DE INGRESO ============ */
 .login{max-width:400px;margin:10vh auto 0;display:flex;flex-direction:column;gap:14px}
-   .login .portada{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;margin-bottom:8px}
-   .login h1{font-size:40px}
-   .login .frase{margin:0;color:var(--muted);font-size:15px;max-width:30ch;text-wrap:balance}
-   .logo-login{width:88px;height:88px;border-radius:22px}
-   .login .btn.pri{width:100%;height:48px;margin-top:4px}
-   .pass{position:relative}
-   .pass input{padding-right:84px}
-   .ver{position:absolute;right:6px;top:50%;transform:translateY(-50%);height:32px;padding:0 10px;border:0;border-radius:8px;background:transparent;color:var(--accent);font-weight:600;font-size:13px}
-   .ver:hover{background:var(--soft)}
-   .cambiar{text-align:center;margin:0;color:var(--muted);font-size:14px}
-   .cambiar button{background:none;border:0;padding:0;color:var(--accent);font-weight:600}
+.login .portada{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;margin-bottom:8px}
+.login h1{font-size:40px}
+.login .frase{margin:0;color:var(--muted);font-size:15px;max-width:30ch;text-wrap:balance}
+.logo-login{width:88px;height:88px;border-radius:22px}
+.login .btn.pri{width:100%;height:48px;margin-top:4px}
+.pass{position:relative}
+.pass input{padding-right:84px}
+.ver{position:absolute;right:6px;top:50%;transform:translateY(-50%);height:32px;padding:0 10px;border:0;border-radius:8px;background:transparent;color:var(--accent);font-weight:600;font-size:13px}
+.ver:hover{background:var(--soft)}
+.separador{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:14px;margin-top:6px}
+.separador::before,.separador::after{content:'';flex:1;height:1px;background:var(--line)}
+.btn.grande{width:100%;height:48px;border:1.5px solid var(--accent);color:var(--accent);background:transparent;font-size:16px}
+.btn.grande:hover{background:var(--soft)}
+
+/* ============ PANTALLA DE BIENVENIDA (la billetera que recibe la moneda) ============ */
+.splash{position:fixed;inset:0;z-index:100;background:#316C4B;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;transition:opacity .45s ease}
+.splash.fuera{opacity:0;pointer-events:none}
+.splash svg{width:150px;height:150px;overflow:visible}
+.splash g{transform-box:fill-box;transform-origin:50% 100%}
+.splash .s-moneda{animation:caerSplash .7s .15s cubic-bezier(.55,0,.8,.3) both}
+.splash .s-billetera{animation:rebote .45s .8s ease-out both}
+.splash h1{color:#FFFCF4;font-size:44px;animation:aparecer .5s 1s both}
+@keyframes caerSplash{from{transform:translateY(-120px);opacity:0}25%{opacity:1}to{transform:translateY(0)}}
+@keyframes aparecer{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.splash *{animation:none!important}}
+
+/* ============ PRESUPUESTO E INGRESOS ============ */
+.balance{display:flex;flex-direction:column;gap:12px}
+.bal-cab{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.bal-num{display:block;font-family:var(--display);font-weight:700;font-size:36px;line-height:1.1;letter-spacing:-.02em}
+.bal-num.neg{color:var(--danger)}
+.barra{height:10px;border-radius:999px;background:var(--soft);overflow:hidden}
+.barra span{display:block;height:100%;border-radius:999px;background:var(--accent)}
+.barra span.alerta{background:var(--danger)}
+.bal-filas{display:grid;grid-template-columns:1fr auto;gap:4px 12px;font-size:14px;color:var(--muted)}
+.bal-filas b{color:var(--ink);font-weight:600;text-align:right}
+.bal-filas b.pos{color:var(--accent)}
+.monto.pos{color:var(--accent)}
+.link-acc{background:none;border:0;padding:0;color:var(--accent);font-weight:600;font-size:14px}
 
 /* ============ BOTÓN FIJO Y VENTANA DE CARGA ============ */
 .pie{position:fixed;left:0;right:0;bottom:0;padding:12px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
@@ -206,22 +246,34 @@ input:focus,select:focus{border-color:var(--accent);outline:none}
 </head>
 <body>
 
+<!-- ============ PANTALLA DE BIENVENIDA: la moneda cae en la billetera ============ -->
+<div id="splash" class="splash" aria-hidden="true">
+  <svg viewBox="0 0 100 100">
+    <g class="s-moneda"><circle cx="50" cy="40" r="14" fill="#E3A11B"/><text x="50" y="46.5" text-anchor="middle" font-size="17" font-weight="700" font-family="sans-serif" fill="#316C4B">$</text></g>
+    <g class="s-billetera"><rect x="16" y="46" width="62" height="36" rx="10" fill="#FFFCF4"/>
+      <rect x="62" y="55.5" width="24" height="17" rx="8.5" fill="#FFFCF4" stroke="#316C4B" stroke-width="3"/>
+      <circle cx="72" cy="64" r="3" fill="#316C4B"/></g>
+  </svg>
+  <h1>Bolsillo</h1>
+</div>
+
 <!-- ============ PANTALLA DE INGRESO (se muestra si no iniciaste sesión) ============ -->
- <form id="login" class="login" hidden novalidate>
-     <div class="portada">
-       <img src="logo.png" alt="Logo de Bolsillo" class="logo-login">
-       <h1>Bolsillo</h1>
-       <p class="frase">Para que fin de mes no te agarre por sorpresa.</p>
-     </div>
-     <div class="campo"><label for="lEmail">Email</label><input type="email" id="lEmail" autocomplete="email" placeholder="tu@email.com"></div>
-     <div class="campo"><label for="lPass">Contraseña</label>
-       <div class="pass"><input type="password" id="lPass" autocomplete="current-password"><button type="button" class="ver" id="lVer">Mostrar</button></div>
-     </div>
-     <p class="err" id="lErr" hidden></p>
-     <button type="submit" class="btn pri" id="lEntrar">Entrar</button>
-     <p class="cambiar"><span id="lPregunta">¿No tenés cuenta?</span> <button type="button" id="lCambiar">Creá una</button></p>
-     <div class="tema" role="group" aria-label="Apariencia"><button type="button" data-tema="auto">Auto</button><button type="button" data-tema="claro">Claro</button><button type="button" data-tema="oscuro">Oscuro</button></div>
-   </form>
+<form id="login" class="login" hidden novalidate>
+  <div class="portada">
+    <img src="logo.png" alt="Logo de Bolsillo" class="logo-login">
+    <h1>Bolsillo</h1>
+    <p class="frase">Para que fin de mes no te agarre por sorpresa.</p>
+  </div>
+  <div class="campo"><label for="lEmail">Email</label><input type="email" id="lEmail" autocomplete="email" placeholder="tu@email.com"></div>
+  <div class="campo"><label for="lPass">Contraseña</label>
+    <div class="pass"><input type="password" id="lPass" autocomplete="current-password"><button type="button" class="ver" id="lVer">Mostrar</button></div>
+  </div>
+  <p class="err" id="lErr" hidden></p>
+  <button type="submit" class="btn pri" id="lEntrar">Entrar</button>
+  <div class="separador"><span id="lPregunta">¿No tenés cuenta?</span></div>
+  <button type="button" class="btn grande" id="lCambiar">Crear cuenta nueva</button>
+  <div class="tema" role="group" aria-label="Apariencia"><button type="button" data-tema="auto">Auto</button><button type="button" data-tema="claro">Claro</button><button type="button" data-tema="oscuro">Oscuro</button></div>
+</form>
 
 <!-- ============ LA APLICACIÓN (se muestra una vez que entraste) ============ -->
 <div id="app" class="wrap" hidden>
@@ -236,6 +288,10 @@ input:focus,select:focus{border-color:var(--accent);outline:none}
       <button id="mesSig" aria-label="Mes siguiente">›</button>
     </div>
   </header>
+  <div class="busqueda">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+    <input type="search" id="buscar" placeholder="Buscar gastos (ej: SUBE, cena)" aria-label="Buscar gastos" autocomplete="off">
+  </div>
   <main id="main" class="wrap"></main>
   <footer class="pie-app"><div class="tema" role="group" aria-label="Apariencia"><button type="button" data-tema="auto">Auto</button><button type="button" data-tema="claro">Claro</button><button type="button" data-tema="oscuro">Oscuro</button></div></footer>
 </div>
@@ -263,6 +319,8 @@ const SUGERIDAS = ['Comida','Transporte','Salidas','Novia','Facultad','Suscripci
 const S = {
   cats: {},          // categorías:  { id: {nombre, color, creado} }
   gastos: {},        // gastos:      { id: {monto, cat, fecha, desc, creado} }
+  ingresos: {},      // ingresos:    { id: {monto, fecha, desc, creado} }
+  presu: {},         // presupuesto de cada mes: { '2026-10': 500000 }
   mes: mesDe(hoy()), // mes que estás mirando, ej. "2026-10"
   vista: 'inicio',   // 'inicio' o el id de una categoría abierta
   on: -1,            // porción de la torta resaltada
@@ -297,11 +355,16 @@ function toast(t){ const el=$('#toast'); el.textContent=t; el.hidden=false; clea
    ===================================================================== */
 const db = {
   async cargar(){
-    const [c, g] = await Promise.all([
+    const [c, g, ing, pr] = await Promise.all([
       sb.from('categorias').select('id,nombre,color,creado'),
-      sb.from('gastos').select('id,categoria_id,monto,fecha,descripcion,creado')
+      sb.from('gastos').select('id,categoria_id,monto,fecha,descripcion,creado'),
+      sb.from('ingresos').select('id,monto,fecha,descripcion,creado'),
+      sb.from('presupuestos').select('mes,monto')
     ]);
     if (c.error || g.error) throw (c.error || g.error);
+    if (ing.error || pr.error) throw (ing.error || pr.error);
+    S.ingresos = Object.fromEntries(ing.data.map(r => [r.id, {monto:Number(r.monto), fecha:r.fecha, desc:r.descripcion||'', creado:Date.parse(r.creado)}]));
+    S.presu = Object.fromEntries(pr.data.map(r => [r.mes, Number(r.monto)]));
     S.cats = Object.fromEntries(c.data.map(r => [r.id, {nombre:r.nombre, color:r.color, creado:Date.parse(r.creado)}]));
     S.gastos = Object.fromEntries(g.data.map(r => [r.id, {monto:Number(r.monto), cat:r.categoria_id, fecha:r.fecha, desc:r.descripcion||'', creado:Date.parse(r.creado)}]));
     S.listo = true; render();
@@ -315,6 +378,21 @@ const db = {
     const { error } = await sb.from('gastos').upsert({id, categoria_id:obj.cat, monto:obj.monto, fecha:obj.fecha, descripcion:obj.desc||null});
     if (error) throw error;
     S.gastos[id] = obj; render();
+  },
+  async guardarIngreso(id, obj){
+    const { error } = await sb.from('ingresos').upsert({id, monto:obj.monto, fecha:obj.fecha, descripcion:obj.desc||null});
+    if (error) throw error;
+    S.ingresos[id] = obj; render();
+  },
+  async borrarIngreso(id){
+    const { error } = await sb.from('ingresos').delete().eq('id', id);
+    if (error) throw error;
+    delete S.ingresos[id]; render();
+  },
+  async guardarPresu(mes, monto){
+    const { error } = await sb.from('presupuestos').upsert({mes, monto});
+    if (error) throw error;
+    S.presu[mes] = monto; render();
   },
   async borrarGasto(id){
     const { error } = await sb.from('gastos').delete().eq('id', id);
@@ -365,7 +443,8 @@ function resumen(){
    Cada vez que algo cambia, render() arma de nuevo el contenido.
    ===================================================================== */
 const ICO = {
-  rep:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v5h-5"/></svg>',edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>',
+  rep:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v5h-5"/></svg>',
+  edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>',
   del:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M5 7l1 13h12l1-13M9 7V4h6v3"/></svg>'
 };
 
@@ -396,12 +475,63 @@ function render(){
   const m = $('#main');
   if (!S.listo){ m.innerHTML='<div class="card"><p class="vacio">Cargando tus gastos…</p></div>'; return; }
   if (S.vista!=='inicio' && !S.cats[S.vista]) S.vista='inicio';
-  $('#btnAgregar').textContent = S.vista==='inicio' ? '+ Agregar gasto' : '+ Agregar gasto en '+S.cats[S.vista].nombre;
-       m.innerHTML = S.vista!=='inicio' ? vistaCat(S.vista) : !Object.keys(S.cats).length ? vistaInicio() : pestanas() + (S.pestana==='calendario' ? vistaCalendario() : vistaInicio());
+  $('#btnAgregar').textContent = S.vista==='inicio' ? '+ Agregar gasto o ingreso' : '+ Agregar gasto en '+S.cats[S.vista].nombre;
+  if (S.busca && S.busca.trim()){ m.innerHTML = vistaBusqueda(); return; }
+  m.innerHTML = S.vista!=='inicio' ? vistaCat(S.vista) : !Object.keys(S.cats).length ? vistaInicio() : pestanas() + (S.pestana==='calendario' ? vistaCalendario() : vistaInicio());
 }
 
+// El presupuesto del mes: si no lo cargaste, se usa el último que pusiste
+function presupuestoDe(mes){
+  if (S.presu[mes] != null) return { monto:S.presu[mes], heredado:false };
+  const ant = Object.keys(S.presu).filter(m => m < mes).sort().pop();
+  return ant ? { monto:S.presu[ant], heredado:true, desde:ant } : null;
+}
+const ingresosDelMes = () => Object.entries(S.ingresos).filter(([,i]) => mesDe(i.fecha) === S.mes).map(([id,i]) => ({id,...i}))
+  .sort((a,b) => b.fecha.localeCompare(a.fecha) || (b.creado||0)-(a.creado||0));
+// La tarjeta de arriba: presupuesto + ingresos − gastos = lo que te queda
+function tarjetaBalance(){
+  const p = presupuestoDe(S.mes), ings = ingresosDelMes();
+  const ing = ings.reduce((s,i) => s + i.monto, 0), gas = delMes().reduce((s,g) => s + g.monto, 0);
+  if (!p && !ing) return `<section class="card balance"><div class="bal-cab"><div style="flex:1;min-width:200px"><p class="eyebrow">Presupuesto de ${esc(soloMes(S.mes))}</p>
+      <p style="margin:6px 0 0">Anotá con cuánta plata arrancás el mes, y te mostramos cuánto te queda a medida que gastás.</p></div>
+      <button class="btn pri" data-a="presu">Poner presupuesto</button></div></section>`;
+  const base = (p ? p.monto : 0) + ing, disp = base - gas;
+  const pct = base > 0 ? Math.min(100, gas / base * 100) : 100;
+  return `<section class="card balance">
+    <div class="bal-cab"><div><p class="eyebrow">Te queda en ${esc(soloMes(S.mes))}</p><b class="bal-num num${disp < 0 ? ' neg' : ''}">${disp < 0 ? '−' : ''}${plata(Math.abs(disp))}</b></div>
+      <button class="link-acc" data-a="presu">Editar presupuesto</button></div>
+    <div class="barra" role="img" aria-label="Gastaste el ${Math.round(pct)}% de lo disponible"><span class="${pct >= 90 ? 'alerta' : ''}" style="width:${pct}%"></span></div>
+    <div class="bal-filas num">
+      <span>Presupuesto${p && p.heredado ? ` <small>(el mismo que en ${esc(soloMes(p.desde))})</small>` : ''}</span><b>${plata(p ? p.monto : 0)}</b>
+      <span>+ Ingresos</span><b class="pos">${plata(ing)}</b>
+      <span>− Gastos</span><b>${plata(gas)}</b>
+    </div></section>`;
+}
+function filaIngreso(i){
+  const d = new Date(i.fecha+'T12:00');
+  const conf = S.confirma==='i:'+i.id ? `<div class="confirma"><span>¿Borrar este ingreso de ${plata(i.monto)}?</span>
+    <button class="btn chico" data-a="no">No</button><button class="btn chico dan" data-a="borrarI" data-id="${i.id}">Sí, borrar</button></div>` : '';
+  return `<div class="gasto"><div class="fecha"><b class="num">${d.getDate()}</b><small>${esc(d.toLocaleDateString('es-AR',{weekday:'short'}).replace('.',''))}</small></div>
+    <div class="txt"><div>${i.desc ? esc(i.desc) : '<span style="color:var(--muted)">Ingreso</span>'}</div></div>
+    <div class="monto num pos">+${plata(i.monto)}</div>
+    <div class="acc"><button class="ico" data-a="editarI" data-id="${i.id}" aria-label="Editar ingreso">${ICO.edit}</button><button class="ico" data-a="pedirBorrarI" data-id="${i.id}" aria-label="Borrar ingreso">${ICO.del}</button></div>${conf}</div>`;
+}
+function seccionIngresos(){
+  const ings = ingresosDelMes(); if (!ings.length) return '';
+  return `<section class="card"><p class="eyebrow" style="margin-bottom:8px">Ingresos de ${esc(soloMes(S.mes))}</p><div class="gastos">${ings.map(filaIngreso).join('')}</div></section>`;
+}
+function abrirPresu(){
+  const p = presupuestoDe(S.mes);
+  $('#velo').innerHTML = `<form class="hoja" data-f="presu" role="dialog" aria-modal="true" aria-labelledby="pTit" novalidate>
+    <h3 id="pTit">Presupuesto de ${esc(soloMes(S.mes))}</h3>
+    <p style="margin:0;color:var(--muted);font-size:14px">Con cuánta plata arrancás el mes. Si no lo cambiás, se usa el mismo en los meses siguientes.</p>
+    <div class="campo"><label for="pMonto">Monto</label><input id="pMonto" class="monto-in num" inputmode="decimal" autocomplete="off" placeholder="$0" value="${p ? esc(nf.format(p.monto)) : ''}"><p class="err" id="ePresu" hidden></p></div>
+    <div class="fin"><button type="button" class="btn" data-a="cerrar">Cancelar</button><button type="submit" class="btn pri">Guardar</button></div></form>`;
+  $('#velo').hidden = false;
+  setTimeout(() => $('#pMonto').focus(), 50);
+}
 function vistaInicio(){
-  if (!Object.keys(S.cats).length) return `<div class="card" style="display:flex;flex-direction:column;gap:16px">
+  if (!Object.keys(S.cats).length) return tarjetaBalance() + seccionIngresos() + `<div class="card" style="display:flex;flex-direction:column;gap:16px">
     <p class="eyebrow">Para empezar</p>
     <p style="margin:0;font-size:17px">Creá las categorías en las que querés ordenar tus gastos. Tocá las que te sirvan o escribí las tuyas.</p>
     <div class="chips">${SUGERIDAS.map(s=>`<button class="chip" data-a="sugerida" data-n="${esc(s)}">+ ${esc(s)}</button>`).join('')}</div>
@@ -410,21 +540,22 @@ function vistaInicio(){
   const lista = filas.map((f,i) => `<button class="fila${f.m?'':' cero'}${S.on===i?' on':''}" data-a="abrir" data-id="${f.id}" data-i="${i}" style="--c:var(--s${f.color})">
       <span class="sw"></span><span class="nom">${esc(f.nombre)}<small>${f.n?f.n+(f.n===1?' gasto':' gastos'):'Sin gastos'}</small></span>
       <span class="monto num">${plata(f.m)}</span><span class="pct num">${total?Math.round(f.m/total*100)+'%':''}</span><span class="chev">›</span></button>`).join('');
-  return `<section class="card"><div class="resumen">${dona(filas,total)}<div class="filas">${lista}</div></div>
+  return tarjetaBalance() + `<section class="card"><div class="resumen">${dona(filas,total)}<div class="filas">${lista}</div></div>
       ${total?'':`<p class="vacio" style="margin-top:12px">Todavía no cargaste gastos en ${esc(soloMes(S.mes))}.</p>`}
       ${formNueva()}</section>
     <section class="card"><p class="eyebrow" style="margin-bottom:8px">Últimos gastos de ${esc(soloMes(S.mes))}</p>
       ${gs.length?`<div class="gastos">${gs.slice(0,8).map(g=>filaGasto(g,true)).join('')}</div>`:'<p class="vacio">Acá vas a ver lo último que cargaste.</p>'}
-      ${gs.length>8?'<p class="vacio" style="font-size:13px">Tocá una categoría para ver todos sus gastos.</p>':''}</section>`;
+      ${gs.length>8?'<p class="vacio" style="font-size:13px">Tocá una categoría para ver todos sus gastos.</p>':''}</section>` + seccionIngresos();
 }
 function formNueva(){ return `<form class="nueva" data-f="nuevaCat"><input type="text" id="inNuevaCat" placeholder="Nueva categoría (ej: Gimnasio)" maxlength="40" aria-label="Nombre de la nueva categoría"><button class="btn" type="submit">Crear</button></form>`; }
 
 // Los 8 circulitos para elegir el color de una categoría
-   function selectorColor(id){
-     const actual = S.cats[id].color;
-     return `<div class="colores" role="radiogroup" aria-label="Color de la categoría">${[0,1,2,3,4,5,6,7].map(i =>
-       `<button class="color${i===actual?' on':''}" style="--c:var(--s${i})" data-a="colorC" data-c="${i}" role="radio" aria-checked="${i===actual}" aria-label="Color ${i+1}"></button>`).join('')}</div>`;
-   }function vistaCat(id){
+function selectorColor(id){
+  const actual = S.cats[id].color;
+  return `<div class="colores" role="radiogroup" aria-label="Color de la categoría">${[0,1,2,3,4,5,6,7].map(i =>
+    `<button class="color${i===actual?' on':''}" style="--c:var(--s${i})" data-a="colorC" data-c="${i}" role="radio" aria-checked="${i===actual}" aria-label="Color ${i+1}"></button>`).join('')}</div>`;
+}
+function vistaCat(id){
   const c = S.cats[id]; const gs = delMes().filter(g=>g.cat===id); const tot = gs.reduce((s,g)=>s+g.monto,0);
   const nTodos = Object.values(S.gastos).filter(g=>g.cat===id).length;
   let extra;
@@ -440,6 +571,30 @@ function formNueva(){ return `<form class="nueva" data-f="nuevaCat"><input type=
       ${extra}
     </section>
     <section class="card">${gs.length?`<div class="gastos">${gs.map(g=>filaGasto(g,false)).join('')}</div>`:`<p class="vacio">No hay gastos de ${esc(c.nombre)} en ${esc(soloMes(S.mes))}.</p>`}</section>`;
+}
+
+// Buscador: encuentra gastos de todos los meses por descripción o categoría
+const sinTildes = t => String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+function vistaBusqueda(){
+  const q = sinTildes(S.busca.trim());
+  const res = Object.entries(S.gastos).map(([id, g]) => ({id, ...g}))
+    .filter(g => sinTildes(g.desc).includes(q) || sinTildes(S.cats[g.cat]?.nombre).includes(q))
+    .sort((a, b) => b.fecha.localeCompare(a.fecha) || (b.creado||0) - (a.creado||0));
+  if (!res.length) return `<section class="card"><p class="vacio">No encontramos gastos con "${esc(S.busca.trim())}".</p></section>`;
+  const total = res.reduce((s, g) => s + g.monto, 0);
+  // Agrupar los resultados por mes, con el subtotal de cada uno
+  let html = '', mesActual = '';
+  res.forEach(g => {
+    const mes = mesDe(g.fecha);
+    if (mes !== mesActual){
+      mesActual = mes;
+      const sub = res.filter(x => mesDe(x.fecha) === mes).reduce((s, x) => s + x.monto, 0);
+      html += `<p class="eyebrow grupo"><span>${esc(nombreMes(mes))}</span><span class="num">${plata(sub)}</span></p>`;
+    }
+    html += filaGasto(g, true);
+  });
+  return `<section class="card"><div class="cal-cab"><span class="eyebrow">${res.length} ${res.length===1?'gasto encontrado':'gastos encontrados'}</span><b class="num">${plata(total)}</b></div>
+    <div class="gastos">${html}</div></section>`;
 }
 
 /* =====================================================================
@@ -494,61 +649,93 @@ function vistaCalendario(){
     <div class="grilla">${celdas}</div>
     <div class="det">${detalle}</div></section>`;
 }
+
 /* =====================================================================
    7. VENTANA PARA CARGAR O EDITAR UN GASTO
    ===================================================================== */
-function abrirHoja(gid, fechaElegida){
+let tipoHoja = 'gasto';   // 'gasto' o 'ingreso': qué estás cargando en la ventana
+function abrirHoja(gid, fechaElegida, opciones = {}){
   const g = gid ? S.gastos[gid] : null;
+  const ing = opciones.ingreso ? S.ingresos[opciones.ingreso] : null;
+  tipoHoja = ing || opciones.tipo === 'ingreso' ? 'ingreso' : 'gasto';
   const catDef = g ? g.cat : (S.vista!=='inicio' ? S.vista : '');
-  const fechaDef = g ? g.fecha : (fechaElegida || (S.mes===mesDe(hoy()) ? hoy() : S.mes+'-01'));
+  const fechaDef = g ? g.fecha : ing ? ing.fecha : (fechaElegida || (S.mes===mesDe(hoy()) ? hoy() : S.mes+'-01'));
   const ops = Object.entries(S.cats).sort((a,b)=>a[1].nombre.localeCompare(b[1].nombre,'es'))
     .map(([id,c])=>`<option value="${id}"${id===catDef?' selected':''}>${esc(c.nombre)}</option>`).join('');
   const v = $('#velo');
-  v.innerHTML = `<form class="hoja" data-f="gasto" data-id="${gid||''}" role="dialog" aria-modal="true" aria-labelledby="hTit" novalidate>
-    <h3 id="hTit">${g?'Editar gasto':'Nuevo gasto'}</h3>
-    <div class="campo"><label for="fMonto">Monto</label><input id="fMonto" class="monto-in num" inputmode="decimal" autocomplete="off" placeholder="$0" value="${g?esc(nf.format(g.monto)):''}"><p class="err" id="eMonto" hidden></p></div>
+  const editando = g || ing;
+  v.innerHTML = `<form class="hoja" data-f="gasto" data-id="${gid||''}" data-ing="${opciones.ingreso||''}" role="dialog" aria-modal="true" aria-labelledby="hTit" novalidate>
+    ${editando ? '' : `<div class="pestanas" role="radiogroup" aria-label="Tipo"><button type="button" role="radio" data-tipo="gasto" class="${tipoHoja==='gasto'?'on':''}" aria-checked="${tipoHoja==='gasto'}">Gasto</button><button type="button" role="radio" data-tipo="ingreso" class="${tipoHoja==='ingreso'?'on':''}" aria-checked="${tipoHoja==='ingreso'}">Ingreso</button></div>`}
+    <h3 id="hTit">${tituloHoja(editando)}</h3>
+    <div class="campo"><label for="fMonto">Monto</label><input id="fMonto" class="monto-in num" inputmode="decimal" autocomplete="off" placeholder="$0" value="${g?esc(nf.format(g.monto)):ing?esc(nf.format(ing.monto)):''}"><p class="err" id="eMonto" hidden></p></div>
     <div class="dos">
-      <div class="campo"><label for="fCat">Categoría</label><select id="fCat">${catDef?'':'<option value="" selected disabled>Elegí una</option>'}${ops}<option value="__nueva">+ Nueva categoría…</option></select><p class="err" id="eCat" hidden></p></div>
+      <div class="campo" id="campoCat"${tipoHoja==='ingreso'?' hidden':''}><label for="fCat">Categoría</label><select id="fCat">${catDef?'':'<option value="" selected disabled>Elegí una</option>'}${ops}<option value="__nueva">+ Nueva categoría…</option></select><p class="err" id="eCat" hidden></p></div>
       <div class="campo"><label for="fFecha">Fecha</label><input type="date" id="fFecha" value="${fechaDef}" max="${hoy()}"><p class="err" id="eFecha" hidden></p></div>
     </div>
     <div class="campo" id="campoNueva" hidden><label for="fNueva">Nombre de la nueva categoría</label><input type="text" id="fNueva" maxlength="40" placeholder="Ej: Regalos"></div>
-    <div class="campo"><label for="fDesc">Descripción <span style="font-weight:400">(opcional)</span></label><input type="text" id="fDesc" maxlength="80" placeholder="Ej: SUBE, cena, libro" value="${g?esc(g.desc||''):''}"></div>
-    <div class="fin"><button type="button" class="btn" data-a="cerrar">Cancelar</button><button type="submit" class="btn pri">${g?'Guardar cambios':'Guardar gasto'}</button></div>
+    <div class="campo"><label for="fDesc">Descripción <span style="font-weight:400">(opcional)</span></label><input type="text" id="fDesc" maxlength="80" placeholder="${tipoHoja==='ingreso'?'Ej: sueldo, venta de mates':'Ej: SUBE, cena, libro'}" value="${g?esc(g.desc||''):ing?esc(ing.desc||''):''}"></div>
+    <div class="fin"><button type="button" class="btn" data-a="cerrar">Cancelar</button><button type="submit" class="btn pri" id="hGuardar">${botonHojaB(editando)}</button></div>
   </form>`;
   v.hidden = false;
   const sel = $('#fCat');
   sel.onchange = () => { const n = sel.value==='__nueva'; $('#campoNueva').hidden=!n; if(n) $('#fNueva').focus(); $('#eCat').hidden=true; };
-  if (!Object.keys(S.cats).length){ sel.value='__nueva'; $('#campoNueva').hidden=false; }
+  if (!Object.keys(S.cats).length && tipoHoja==='gasto'){ sel.value='__nueva'; $('#campoNueva').hidden=false; }
   ['fMonto','fFecha','fNueva'].forEach(i => $('#'+i).addEventListener('input', () => document.querySelectorAll('.hoja .err').forEach(e=>e.hidden=true)));
   setTimeout(() => $('#fMonto').focus(), 50);
 }
-   // Repetir: abre la ventana de un gasto nuevo, ya completa con los datos de otro
-   function repetirGasto(id){
-     const g = S.gastos[id];
-     abrirHoja(null, hoy());
-     $('#fMonto').value = nf.format(g.monto);
-     $('#fCat').value = g.cat;
-     $('#fDesc').value = g.desc || '';
-   }
-   // Animación: una moneda cae en la billetera cuando guardás un gasto
-   function festejar(){
-     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;   // respeta a quien pide menos movimiento
-     const el = document.createElement('div');
-     el.className = 'festejo';
-     el.innerHTML = `<svg viewBox="0 0 100 100" aria-hidden="true">
-       <circle cx="50" cy="50" r="48" style="fill:var(--accent)"/>
-       <g class="moneda"><circle cx="50" cy="42" r="13" fill="#E3A11B"/><text x="50" y="48" text-anchor="middle" font-size="16" font-weight="700" font-family="sans-serif" fill="#2E6B48">$</text></g>
-       <g class="billetera"><rect x="20" y="47" width="58" height="33" rx="9" fill="#FFFCF4"/>
-         <rect x="62" y="56" width="21" height="15" rx="7.5" fill="#FFFCF4" style="stroke:var(--accent)" stroke-width="3"/>
-         <circle cx="71" cy="63.5" r="2.6" style="fill:var(--accent)"/></g></svg>`;
-     document.body.appendChild(el);
-     setTimeout(() => el.remove(), 1400);   // la saca de la pantalla cuando termina
-   }
+function tituloHoja(editando){ return tipoHoja==='ingreso' ? (editando?'Editar ingreso':'Nuevo ingreso') : (editando?'Editar gasto':'Nuevo gasto'); }
+function botonHojaB(editando){ return editando ? 'Guardar cambios' : (tipoHoja==='ingreso' ? 'Guardar ingreso' : 'Guardar gasto'); }
+// Cambiar entre "Gasto" e "Ingreso" en la ventana
+function ponerTipo(t){
+  tipoHoja = t;
+  document.querySelectorAll('[data-tipo]').forEach(b => { b.classList.toggle('on', b.dataset.tipo === t); b.setAttribute('aria-checked', b.dataset.tipo === t); });
+  $('#campoCat').hidden = t === 'ingreso';
+  $('#campoNueva').hidden = t === 'ingreso' || $('#fCat').value !== '__nueva';
+  $('#hTit').textContent = tituloHoja(false); $('#hGuardar').textContent = botonHojaB(false);
+  $('#fDesc').placeholder = t === 'ingreso' ? 'Ej: sueldo, venta de mates' : 'Ej: SUBE, cena, libro';
+  document.querySelectorAll('.hoja .err').forEach(e => e.hidden = true);
+}
+// Repetir: abre la ventana de un gasto nuevo, ya completa con los datos de otro
+function repetirGasto(id){
+  const g = S.gastos[id];
+  abrirHoja(null, hoy());
+  $('#fMonto').value = nf.format(g.monto);
+  $('#fCat').value = g.cat;
+  $('#fDesc').value = g.desc || '';
+}
+// Animación: una moneda cae en la billetera cuando guardás un gasto
+function festejar(){
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;   // respeta a quien pide menos movimiento
+  const el = document.createElement('div');
+  el.className = 'festejo';
+  el.innerHTML = `<svg viewBox="0 0 100 100" aria-hidden="true">
+    <circle cx="50" cy="50" r="48" style="fill:var(--accent)"/>
+    <g class="moneda"><circle cx="50" cy="42" r="13" fill="#E3A11B"/><text x="50" y="48" text-anchor="middle" font-size="16" font-weight="700" font-family="sans-serif" fill="#2E6B48">$</text></g>
+    <g class="billetera"><rect x="20" y="47" width="58" height="33" rx="9" fill="#FFFCF4"/>
+      <rect x="62" y="56" width="21" height="15" rx="7.5" fill="#FFFCF4" style="stroke:var(--accent)" stroke-width="3"/>
+      <circle cx="71" cy="63.5" r="2.6" style="fill:var(--accent)"/></g></svg>`;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1400);   // la saca de la pantalla cuando termina
+}
 function cerrarHoja(){ const v=$('#velo'); v.hidden=true; v.innerHTML=''; }
 function error(id,t){ const e=$('#'+id); e.textContent=t; e.hidden=false; }
 
 async function guardarGasto(form){
   const monto=parseMonto($('#fMonto').value), cat=$('#fCat').value, fecha=$('#fFecha').value, desc=$('#fDesc').value.trim();
+  if (tipoHoja === 'ingreso'){
+    let ok2 = true;
+    if (!(monto>0)){ error('eMonto','Escribí un monto mayor a cero, por ejemplo 250000.'); ok2=false; }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)){ error('eFecha','Elegí una fecha.'); ok2=false; }
+    if (!ok2) return;
+    const iid = form.dataset.ing, prev = iid ? S.ingresos[iid] : null;
+    cerrarHoja();
+    await seguro(async () => {
+      await db.guardarIngreso(iid || nuevoId(), {monto, fecha, desc, creado:prev?.creado||Date.now()});
+      if (!iid) festejar();
+      if (mesDe(fecha) !== S.mes){ S.mes=mesDe(fecha); S.on=-1; render(); }
+    }, iid ? 'Cambios guardados' : 'Ingreso guardado en '+soloMes(fecha.slice(0,7)));
+    return;
+  }
   let ok = true;
   if (!(monto>0)){ error('eMonto','Escribí un monto mayor a cero, por ejemplo 2500 o 2.500,50.'); ok=false; }
   if (!cat){ error('eCat','Elegí una categoría.'); ok=false; }
@@ -571,6 +758,7 @@ async function guardarGasto(form){
    ===================================================================== */
 document.addEventListener('click', async e => {
   if (e.target.id === 'velo'){ cerrarHoja(); return; }
+  const tp = e.target.closest('[data-tipo]'); if (tp){ ponerTipo(tp.dataset.tipo); return; }
   const b = e.target.closest('[data-a]'); if (!b) return;
   const a = b.dataset.a, id = b.dataset.id;
   if (a==='abrir'){ S.vista=id; S.on=-1; S.confirma=null; S.editaCat=false; render(); scrollTo(0,0); }
@@ -582,6 +770,10 @@ document.addEventListener('click', async e => {
   else if (a==='colorC'){ const id=S.vista; await seguro(() => db.guardarCat(id, {...S.cats[id], color:Number(b.dataset.c)}), 'Color cambiado'); }
   else if (a==='sugerida') await seguro(() => crearCat(b.dataset.n));
   else if (a==='editarG') abrirHoja(id);
+  else if (a==='editarI') abrirHoja(null, null, {ingreso:id});
+  else if (a==='pedirBorrarI'){ S.confirma='i:'+id; render(); }
+  else if (a==='borrarI'){ S.confirma=null; await seguro(() => db.borrarIngreso(id), 'Ingreso borrado'); }
+  else if (a==='presu') abrirPresu();
   else if (a==='repetirG') repetirGasto(id);
   else if (a==='pedirBorrarG'){ S.confirma='g:'+id; render(); }
   else if (a==='pedirBorrarC'){ S.confirma='c:'+id; S.editaCat=false; render(); }
@@ -594,6 +786,11 @@ document.addEventListener('submit', async e => {
   const f = e.target, t = f.dataset.f; if (!t) return;
   e.preventDefault();
   if (t==='gasto') guardarGasto(f);
+  else if (t==='presu'){
+    const m = parseMonto($('#pMonto').value);
+    if (!(m >= 0)){ const e=$('#ePresu'); e.textContent='Escribí un monto, por ejemplo 500000 o 500.000.'; e.hidden=false; return; }
+    cerrarHoja(); await seguro(() => db.guardarPresu(S.mes, m), 'Presupuesto guardado');
+  }
   else if (t==='nuevaCat'){ const v=$('#inNuevaCat').value; if(!v.trim()) return; await seguro(() => crearCat(v), 'Categoría creada'); }
   else if (t==='renombrar'){ const v=$('#inRenombrar').value.trim().replace(/\s+/g,' '); if(!v) return; const id=S.vista;
     S.editaCat=false; await seguro(() => db.guardarCat(id, {...S.cats[id], nombre:v}), 'Nombre cambiado'); }
@@ -608,70 +805,81 @@ document.addEventListener('keydown', e => { if (e.key==='Escape' && !$('#velo').
 $('#mesAnt').onclick = () => { S.mes=moverMes(S.mes,-1); S.on=-1; S.confirma=null; render(); };
 $('#mesSig').onclick = () => { S.mes=moverMes(S.mes,1); S.on=-1; S.confirma=null; render(); };
 $('#btnAgregar').onclick = () => abrirHoja(null);
+$('#buscar').addEventListener('input', e => { S.busca = e.target.value; S.confirma = null; render(); });
 
 /* =====================================================================
    9. INICIAR SESIÓN Y CREAR CUENTA
    ===================================================================== */
 const MENSAJES = {
   'Invalid login credentials': 'El email o la contraseña no coinciden.',
-  'User already registered': 'Ya existe una cuenta con ese email. Tocá "Entrar".',
+  'User already registered': 'Ya existe una cuenta con ese email. Tocá "Entrar con mi cuenta", acá abajo.',
   'Email not confirmed': 'Falta confirmar el email: revisá tu casilla y tocá el link que te llegó.'
 };
-   let modoCrear = false;   // false = pantalla "Entrar", true = pantalla "Crear cuenta"
-   function errLogin(t){ const e=$('#lErr'); e.textContent=t; e.hidden=false; }
-   // Cambia la pantalla entre "Entrar" y "Crear cuenta"
-   function ponerModo(crear){
-     modoCrear = crear;
-     $('#lEntrar').textContent = crear ? 'Crear cuenta' : 'Entrar';
-     $('#lPregunta').textContent = crear ? '¿Ya tenés cuenta?' : '¿No tenés cuenta?';
-     $('#lCambiar').textContent = crear ? 'Entrá' : 'Creá una';
-     $('#lPass').placeholder = crear ? 'Mínimo 6 caracteres' : '';
-     $('#lPass').autocomplete = crear ? 'new-password' : 'current-password';
-     $('#lErr').hidden = true;
-   }
-   async function ingresar(){
-     const crear = modoCrear;
-     const email=$('#lEmail').value.trim(), password=$('#lPass').value;
-     $('#lErr').hidden = true;
-     if (!email || !password) return errLogin('Completá el email y la contraseña.');
-     if (crear && password.length < 6) return errLogin('La contraseña tiene que tener al menos 6 caracteres.');
-     $('#lEntrar').disabled = true;
-     const { data, error } = crear ? await sb.auth.signUp({email, password}) : await sb.auth.signInWithPassword({email, password});
-     $('#lEntrar').disabled = false;
-     if (error) return errLogin(MENSAJES[error.message] || error.message);
-     if (crear && !data.session) errLogin('Te mandamos un email para confirmar la cuenta. Tocá el link y después entrá acá.');
-   }
-   $('#login').addEventListener('submit', e => { e.preventDefault(); ingresar(); });
-   $('#lCambiar').onclick = () => ponerModo(!modoCrear);
-   // Botón "Mostrar": cambia la contraseña entre puntitos y texto visible
-   $('#lVer').onclick = () => {
-     const p = $('#lPass'); const ver = p.type === 'password';
-     p.type = ver ? 'text' : 'password';
-     $('#lVer').textContent = ver ? 'Ocultar' : 'Mostrar';
-   };
-   $('#btnSalir').onclick = () => sb.auth.signOut();
-   // Modo claro / oscuro: se aplica y se recuerda en este dispositivo
-   function aplicarTema(t){
-     if (t === 'claro') document.documentElement.dataset.theme = 'light';
-     else if (t === 'oscuro') document.documentElement.dataset.theme = 'dark';
-     else delete document.documentElement.dataset.theme;   // "auto": sigue al celular o la compu
-     document.querySelectorAll('[data-tema]').forEach(b => b.classList.toggle('on', b.dataset.tema === t));
-   }
-   let temaGuardado = 'auto';
-   try { temaGuardado = localStorage.getItem('bolsillo-tema') || 'auto'; } catch(e){}
-   aplicarTema(temaGuardado);
-   document.addEventListener('click', e => {
-     const b = e.target.closest('[data-tema]'); if (!b) return;
-     try { localStorage.setItem('bolsillo-tema', b.dataset.tema); } catch(e){}
-     aplicarTema(b.dataset.tema);
-   });
+let modoCrear = false;   // false = pantalla "Entrar", true = pantalla "Crear cuenta"
+function errLogin(t){ const e=$('#lErr'); e.textContent=t; e.hidden=false; }
+// Cambia la pantalla entre "Entrar" y "Crear cuenta"
+function ponerModo(crear){
+  modoCrear = crear;
+  $('#lEntrar').textContent = crear ? 'Crear cuenta' : 'Entrar';
+  $('#lPregunta').textContent = crear ? '¿Ya tenés cuenta?' : '¿No tenés cuenta?';
+  $('#lCambiar').textContent = crear ? 'Entrar con mi cuenta' : 'Crear cuenta nueva';
+  $('#lPass').placeholder = crear ? 'Mínimo 6 caracteres' : '';
+  $('#lPass').autocomplete = crear ? 'new-password' : 'current-password';
+  $('#lErr').hidden = true;
+}
+async function ingresar(){
+  const crear = modoCrear;
+  const email=$('#lEmail').value.trim(), password=$('#lPass').value;
+  $('#lErr').hidden = true;
+  if (!email || !password) return errLogin('Completá el email y la contraseña.');
+  if (crear && password.length < 6) return errLogin('La contraseña tiene que tener al menos 6 caracteres.');
+  $('#lEntrar').disabled = true;
+  const { data, error } = crear ? await sb.auth.signUp({email, password}) : await sb.auth.signInWithPassword({email, password});
+  $('#lEntrar').disabled = false;
+  if (error) return errLogin(MENSAJES[error.message] || error.message);
+  if (crear && !data.session) errLogin('Te mandamos un email para confirmar la cuenta. Tocá el link y después entrá acá.');
+}
+$('#login').addEventListener('submit', e => { e.preventDefault(); ingresar(); });
+$('#lCambiar').onclick = () => ponerModo(!modoCrear);
+// Botón "Mostrar": cambia la contraseña entre puntitos y texto visible
+$('#lVer').onclick = () => {
+  const p = $('#lPass'); const ver = p.type === 'password';
+  p.type = ver ? 'text' : 'password';
+  $('#lVer').textContent = ver ? 'Ocultar' : 'Mostrar';
+};
+$('#btnSalir').onclick = () => sb.auth.signOut();
+
+// Modo claro / oscuro: se aplica y se recuerda en este dispositivo
+function aplicarTema(t){
+  if (t === 'claro') document.documentElement.dataset.theme = 'light';
+  else if (t === 'oscuro') document.documentElement.dataset.theme = 'dark';
+  else delete document.documentElement.dataset.theme;   // "auto": sigue al celular o la compu
+  document.querySelectorAll('[data-tema]').forEach(b => b.classList.toggle('on', b.dataset.tema === t));
+}
+let temaGuardado = 'auto';
+try { temaGuardado = localStorage.getItem('bolsillo-tema') || 'auto'; } catch(e){}
+aplicarTema(temaGuardado);
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-tema]'); if (!b) return;
+  try { localStorage.setItem('bolsillo-tema', b.dataset.tema); } catch(e){}
+  aplicarTema(b.dataset.tema);
+});
 
 // Muestra la pantalla de ingreso o la app, según si hay una sesión iniciada
+// La pantalla verde de bienvenida se va después de la animación (alrededor de un segundo y medio)
+const inicioSplash = Date.now();
+function sacarSplash(){
+  const el = $('#splash'); if (!el || el.classList.contains('fuera')) return;
+  const espera = matchMedia('(prefers-reduced-motion: reduce)').matches ? 600 : 1700;
+  setTimeout(() => { el.classList.add('fuera'); setTimeout(() => el.remove(), 500); }, Math.max(0, espera - (Date.now() - inicioSplash)));
+}
+setTimeout(sacarSplash, 4000);   // por si la conexión tarda: que nunca quede trabada
 function mostrar(sesion){
+  sacarSplash();
   $('#login').hidden = !!sesion;
   $('#app').hidden = $('#pie').hidden = !sesion;
   if (sesion && !S.listo){ render(); db.cargar().catch(e => { console.error(e); $('#main').innerHTML='<div class="card"><p class="vacio">No se pudieron cargar tus gastos. Revisá tu conexión y recargá la página.</p></div>'; }); }
-  if (!sesion){ S.listo=false; S.cats={}; S.gastos={}; S.vista='inicio'; }
+  if (!sesion){ S.listo=false; S.cats={}; S.gastos={}; S.ingresos={}; S.presu={}; S.vista='inicio'; }
 }
 // (el setTimeout evita un bloqueo conocido de Supabase si se hacen pedidos dentro de este aviso)
 sb.auth.onAuthStateChange((_evento, sesion) => setTimeout(() => mostrar(sesion), 0));
